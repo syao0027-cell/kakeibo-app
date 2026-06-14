@@ -1,14 +1,13 @@
 body {
     margin: 0;
     padding: 0;
-    background: #FDFBF7; /* 画像のような柔らかなアイボリーホワイト */
+    background: #FDFBF7;
     font-family: "Noto Sans JP", sans-serif;
     color: #3C3A35;
     padding-bottom: 120px;
     overflow-x: hidden;
 }
 
-/* 水彩風の木の葉背景の演出（CSSグラデーションでふんわり再現） */
 .leaf-bg-top-left {
     position: absolute;
     top: -40px;
@@ -39,7 +38,6 @@ body {
     z-index: 10;
 }
 
-/* ヘッダー周り（画像ライクなスズメの配置） */
 .app-header {
     display: flex;
     align-items: center;
@@ -65,7 +63,6 @@ body {
     color: #9EC29A;
 }
 
-/* サブヘッダー（登録画面用） */
 .app-header-sub {
     display: flex;
     align-items: center;
@@ -88,7 +85,6 @@ body {
     border-radius: 50%;
 }
 
-/* ホーム画面の日付フィルター */
 .home-period-filter {
     text-align: center;
     margin-bottom: 20px;
@@ -104,7 +100,6 @@ body {
     border-radius: 20px;
 }
 
-/* リッチサマリーカード（画像デザインの完全再現） */
 .rich-summary-card {
     display: flex;
     align-items: center;
@@ -152,7 +147,6 @@ body {
     padding-left: 5px;
 }
 
-/* タイトル行表示 */
 .section-title-row {
     display: flex;
     justify-content: space-between;
@@ -166,13 +160,16 @@ body {
     color: #3C3A35;
     font-weight: 700;
 }
-.see-all-btn {
-    font-size: 12px;
-    color: #8C8A82;
-    cursor: pointer;
+
+/* 履歴外枠コンテナ（丸みをまとめて綺麗に見せる） */
+.history-container-box {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    border: 1px solid #F0EDE4;
 }
 
-/* 履歴項目の画像風アレンジ */
 .rich-history-item {
     display: flex;
     align-items: center;
@@ -180,14 +177,13 @@ body {
     padding: 14px;
     border-bottom: 1px solid #F2F1EB;
     position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
-.rich-history-item:first-child {
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
+.rich-history-item:hover {
+    background-color: #FAF9F5;
 }
 .rich-history-item:last-child {
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
     border-bottom: none;
 }
 .history-date-box {
@@ -239,9 +235,39 @@ body {
 .history-row-arrow {
     color: #D2D0C8;
     font-size: 13px;
+    transition: transform 0.3s;
+}
+.history-row-arrow.open {
+    transform: rotate(90deg);
 }
 
-/* 登録画面の支出・収入タブ切り替え切り替えスイッチ（画像2枚目完全再現） */
+/* アコーディオン式編集エリア（滑らかな開閉アニメーション） */
+.history-actions {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+    background: #FAF9F6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 0 14px;
+    border-bottom: 1px solid #F2F1EB;
+}
+.history-actions.open {
+    max-height: 60px; /* 十分な高さを確保 */
+    padding: 10px 14px;
+}
+.action-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+.edit-btn { background: #EAF4E8; color: #4A6B44; }
+.delete-btn-action { background: #FCEFEA; color: #E79A82; }
+
 .type-select-tabs {
     display: flex;
     background: #EAE8DF;
@@ -279,7 +305,6 @@ body {
     border: 1px solid #CBE6C8;
 }
 
-/* よく使う項目 (画像2枚目の丸みを帯びたグリッド) */
 .horizontal-favorites-scroll {
     display: flex;
     gap: 10px;
@@ -306,7 +331,6 @@ body {
     font-weight: 500;
 }
 
-/* 入力入力フォームの構造化行（画像2枚目のレイアウト） */
 .card {
     background: white;
     border-radius: 20px;
@@ -363,7 +387,6 @@ body {
     padding-left: 5px;
 }
 
-/* 登録登録ボタン（画像イメージの綺麗な深いグリーン） */
 .main-submit-btn {
     margin-top: 20px;
     background: #6B9467;
@@ -373,9 +396,45 @@ body {
     border-radius: 25px;
     font-size: 16px;
     box-shadow: 0 4px 10px rgba(107,148,103,0.3);
+    border: none;
+    width: 100%;
+    cursor: pointer;
 }
 
-/* 下部固定の水彩風スズメ */
+/* グラフ表示用スタイル */
+.chart-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    margin: 15px auto 25px;
+}
+.pie-chart {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(#eee 0% 100%);
+    transition: background 0.5s ease-out;
+}
+.chart-center-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: #7C7A72;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* 固定配置のスズメ */
 .sparrow-avatar-fixed {
     position: fixed;
     right: 16px;
@@ -396,6 +455,9 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     margin-bottom: 6px;
     border: 1px solid #D8E6D5;
+    max-width: 180px;
+    word-break: break-all;
+    pointer-events: auto;
 }
 .sparrow-watercolor-wrapper {
     width: 60px;
@@ -413,7 +475,6 @@ body {
     border-radius: 50%;
 }
 
-/* 高級感のあるボトムナビゲーション（中央ボタンの飛び出し完全再現） */
 .bottom-nav-rich {
     position: fixed;
     bottom: 0;
@@ -426,7 +487,7 @@ body {
     justify-content: space-around;
     box-shadow: 0 -3px 15px rgba(140,135,120,0.08);
     z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom); /* iPhoneの下部バー対策 */
+    padding-bottom: env(safe-area-inset-bottom);
 }
 .nav-item-btn {
     background: none;
@@ -442,7 +503,7 @@ body {
 }
 .nav-icon {
     font-size: 20px;
-    color: #A2A0Handle;
+    color: #A2A09B; /* タイポ修正 */
     filter: grayscale(1);
     opacity: 0.4;
     transition: all 0.2s;
@@ -463,7 +524,6 @@ body {
     font-weight: bold;
 }
 
-/* 中央の丸いプラス登録ボタンの浮き出し */
 .center-add-button {
     position: absolute;
     top: -16px;
@@ -483,19 +543,10 @@ body {
     background: #6B9467;
 }
 
-/* 履歴項目操作用ボタン */
-.history-actions {
-    padding: 0 14px 10px;
-    background: white;
-    text-align: right;
-    border-bottom: 1px solid #F2F1EB;
-}
-
-/* 追加スタイル（Ver.0.5継承用） */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 .period-select { display: flex; background: #EAE8DF; border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 15px; }
-.period-btn { padding: 8px; font-size: 14px; border-radius: 10px; background: transparent; color: #666; cursor: pointer; }
+.period-btn { padding: 8px; font-size: 14px; border-radius: 10px; background: transparent; color: #666; border: none; flex: 1; cursor: pointer; }
 .period-btn.active { background: white; color: #333; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 .report-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
 .csv-import-label { display: block; text-align: center; background: #fff; border: 2px dashed #5A9E96; color: #5A9E96; padding: 12px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; }
