@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>家計簿</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7FAE7B">
+<link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1552728089-57bdde30ebd3?w=192&auto=format&fit=crop&q=60">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="leaf-bg-top-left"></div>
+<div class="leaf-bg-top-right"></div>
+
+<div class="container">
+
+    <section id="home-tab" class="tab-content active">
+        <header class="app-header">
+            <div class="header-sparrow-left">
+                <img src="https://images.unsplash.com/photo-1552728089-57bdde30ebd3?w=120&auto=format&fit=crop&q=60" alt="sparrow">
+            </div>
+            <h1>家計簿</h1>
+            <div class="header-bell">🔔</div>
+        </header>
+
+        <div class="home-period-filter">
+            <select id="home-date-picker" onchange="updateSummary()"></select>
+        </div>
+
+        <div class="summary">
+            <div class="rich-summary-card income-card-rich">
+                <div class="card-icon-wrapper circle-green">🌱</div>
+                <div class="card-body">
+                    <div class="card-label">今月収入</div>
+                    <div class="card-amount" id="monthlyIncome">¥0</div>
+                </div>
+                <div class="card-arrow">＞</div>
+            </div>
+
+            <div class="rich-summary-card expense-card-rich">
+                <div class="card-icon-wrapper circle-orange">👛</div>
+                <div class="card-body">
+                    <div class="card-label">今月支出</div>
+                    <div class="card-amount" id="monthlyExpense">¥0</div>
+                </div>
+                <div class="card-arrow">＞</div>
+            </div>
+
+            <div class="rich-summary-card balance-card-rich">
+                <div class="card-icon-wrapper circle-yellow">🌻</div>
+                <div class="card-body">
+                    <div class="card-label">今月収支</div>
+                    <div class="card-amount" id="monthlyBalance">¥0</div>
+                </div>
+                <div class="card-arrow">＞</div>
+            </div>
+        </div>
+
+        <div class="section-title-row">
+            <h2>🍃 最近の履歴</h2>
+            <span class="see-all-btn">すべて見る ＞</span>
+        </div>
+        <div id="history"></div>
+    </section>
+
+    <section id="form-tab" class="tab-content">
+        <header class="app-header-sub">
+            <span class="back-text-btn" onclick="document.querySelector('[data-tab=\'home-tab\']').click();">＜ 戻る</span>
+            <h1>登録</h1>
+            <div class="header-sparrow-right">
+                <img src="https://images.unsplash.com/photo-1552728089-57bdde30ebd3?w=120&auto=format&fit=crop&q=60" alt="sparrow">
+            </div>
+        </header>
+
+        <div class="type-select-tabs">
+            <label class="type-tab-label">
+                <input type="radio" name="type" value="expense" checked onchange="toggleTypeTab()">
+                <span class="tab-button-inner text-expense">⬇︎ 支出</span>
+            </label>
+            <label class="type-tab-label">
+                <input type="radio" name="type" value="income" onchange="toggleTypeTab()">
+                <span class="tab-button-inner text-income">⬆︎ 収入</span>
+            </label>
+        </div>
+
+        <div class="section-title-row" style="margin-top: 20px;">
+            <h2>🍃 よく使う項目</h2>
+            <span class="see-all-btn" style="color: #4A7047;">編集</span>
+        </div>
+        
+        <div id="favorites" class="horizontal-favorites-scroll"></div>
+
+        <div class="card input-form-card">
+            <div class="form-row">
+                <span class="form-row-icon circle-green">￥</span>
+                <label>金額</label>
+                <div class="input-wrapper">
+                    <input type="number" id="amount" placeholder="例）1280">
+                    <span class="unit-text">円</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <span class="form-row-icon circle-green-light">🏷️</span>
+                <label>カテゴリ</label>
+                <select id="category">
+                    <option>食費</option>
+                    <option>日用品</option>
+                    <option>交通費</option>
+                    <option>趣味</option>
+                    <option>その他</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <span class="form-row-icon circle-green-light">📝</span>
+                <label>メモ</label>
+                <input type="text" id="memo" placeholder="例）スーパーで買い物">
+            </div>
+
+            <div class="form-row">
+                <span class="form-row-icon circle-green-light">📅</span>
+                <label>日付</label>
+                <input type="date" id="date">
+            </div>
+
+            <button id="saveBtn" class="main-submit-btn">登録する</button>
+        </div>
+    </section>
+
+    <section id="summary-tab" class="tab-content">
+        <header class="app-header-sub">
+            <h1>集計・分析</h1>
+        </header>
+        
+        <div class="period-select">
+            <button id="btn-monthly" class="period-btn active">月別</button>
+            <button id="btn-yearly" class="period-btn">年別</button>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <select id="report-period-picker"></select>
+        </div>
+
+        <div class="card">
+            <h3 id="report-title" style="margin-top:0; font-size:16px; color:#666;">カテゴリ別支出</h3>
+            <div id="category-report"></div>
+        </div>
+    </section>
+
+    <section id="settings-tab" class="tab-content">
+        <header class="app-header-sub">
+            <h1>設定・管理</h1>
+        </header>
+        
+        <div class="card" style="margin-bottom: 20px;">
+            <h3 style="margin-top:0; font-size:16px;">データの入出力 (CSV)</h3>
+            <p style="font-size:13px; color:#666;">データをCSVファイルとして保存・読み込みができます。</p>
+            
+            <button id="exportCsvBtn" style="background:#5A9E96; margin-bottom:15px; font-size:16px; padding:12px; border-radius: 20px;">
+                📥 CSVファイルを書き出す
+            </button>
+
+            <label class="csv-import-label">
+                📤 CSVファイルを読み込む
+                <input type="file" id="importCsvFile" accept=".csv" style="display:none;">
+            </label>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-size:16px; color:#d9534f;">危険な操作</h3>
+            <button id="clearDataBtn" class="delete-btn" style="width:100%; margin:0; padding:12px; font-size:15px;">
+                データをすべて初期化する
+            </button>
+        </div>
+    </section>
+
+</div>
+
+<div class="sparrow-avatar-fixed">
+    <div class="sparrow-balloon-rich" id="sparrow-speech">今日も記録しよう♪</div>
+    <div class="sparrow-watercolor-wrapper">
+        <img src="https://images.unsplash.com/photo-1552728089-57bdde30ebd3?w=180&auto=format&fit=crop&q=60" alt="Chun" id="sparrow-icon">
+    </div>
+</div>
+
+<nav class="bottom-nav-rich">
+    <button data-tab="home-tab" class="nav-item-btn active">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">ホーム</span>
+    </button>
+    <button data-tab="form-tab" class="nav-item-btn">
+        <div class="center-add-button">＋</div>
+        <span class="nav-label" style="margin-top:28px;">登録</span>
+    </button>
+    <button data-tab="summary-tab" class="nav-item-btn">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">集計</span>
+    </button>
+    <button data-tab="settings-tab" class="nav-item-btn">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">設定</span>
+    </button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>

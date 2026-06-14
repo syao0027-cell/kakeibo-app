@@ -1,0 +1,502 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: #FDFBF7; /* 画像のような柔らかなアイボリーホワイト */
+    font-family: "Noto Sans JP", sans-serif;
+    color: #3C3A35;
+    padding-bottom: 120px;
+    overflow-x: hidden;
+}
+
+/* 水彩風の木の葉背景の演出（CSSグラデーションでふんわり再現） */
+.leaf-bg-top-left {
+    position: absolute;
+    top: -40px;
+    left: -40px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(212,233,205,0.6) 0%, rgba(253,251,247,0) 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+.leaf-bg-top-right {
+    position: absolute;
+    top: -20px;
+    right: -30px;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(198,223,189,0.5) 0%, rgba(253,251,247,0) 70%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.container {
+    max-width: 430px;
+    margin: auto;
+    padding: 16px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 10;
+}
+
+/* ヘッダー周り（画像ライクなスズメの配置） */
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+.app-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+    letter-spacing: 2px;
+}
+.header-sparrow-left img {
+    width: 55px;
+    height: 55px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+.header-bell {
+    font-size: 22px;
+    color: #9EC29A;
+}
+
+/* サブヘッダー（登録画面用） */
+.app-header-sub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+.app-header-sub h1 {
+    font-size: 22px;
+    margin: 0;
+}
+.back-text-btn {
+    color: #7FAE7B;
+    font-weight: bold;
+    cursor: pointer;
+}
+.header-sparrow-right img {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* ホーム画面の日付フィルター */
+.home-period-filter {
+    text-align: center;
+    margin-bottom: 20px;
+}
+.home-period-filter select {
+    width: auto;
+    display: inline-block;
+    padding: 6px 30px 6px 16px;
+    border: 1px solid #B4D3AF;
+    background-color: #F7F9F5;
+    color: #4A6B44;
+    font-weight: 500;
+    border-radius: 20px;
+}
+
+/* リッチサマリーカード（画像デザインの完全再現） */
+.rich-summary-card {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 14px rgba(140, 135, 120, 0.06);
+    border: 1px solid rgba(230, 228, 220, 0.5);
+    position: relative;
+}
+.card-icon-wrapper {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-right: 14px;
+}
+.circle-green { background: #EAF4E8; color: #7FAE7B; }
+.circle-orange { background: #FCEFEA; color: #E79A82; }
+.circle-yellow { background: #FCF7E8; color: #DEB34A; }
+.circle-green-light { background: #F4F7F2; }
+
+.card-body {
+    flex-grow: 1;
+}
+.card-label {
+    font-size: 13px;
+    color: #8C8A82;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+.card-amount {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2E2D2A;
+}
+.card-arrow {
+    color: #C2C0B8;
+    font-size: 16px;
+    font-weight: bold;
+    padding-left: 5px;
+}
+
+/* タイトル行表示 */
+.section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 12px;
+}
+.section-title-row h2 {
+    font-size: 16px;
+    margin: 0;
+    color: #3C3A35;
+    font-weight: 700;
+}
+.see-all-btn {
+    font-size: 12px;
+    color: #8C8A82;
+    cursor: pointer;
+}
+
+/* 履歴項目の画像風アレンジ */
+.rich-history-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 14px;
+    border-bottom: 1px solid #F2F1EB;
+    position: relative;
+}
+.rich-history-item:first-child {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+.rich-history-item:last-child {
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-bottom: none;
+}
+.history-date-box {
+    font-size: 12px;
+    color: #7C7A72;
+    width: 45px;
+    line-height: 1.3;
+}
+.history-type-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    margin-right: 12px;
+}
+.badge-expense { background: #FCEFEA; color: #E79A82; }
+.badge-income { background: #EAF4E8; color: #6FBF73; }
+
+.history-main-info {
+    flex-grow: 1;
+}
+.history-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+}
+.history-memo-sub {
+    font-size: 11px;
+    color: #9C9A92;
+    margin-top: 2px;
+}
+.history-right-amount {
+    text-align: right;
+    margin-right: 10px;
+}
+.amt-val {
+    font-size: 15px;
+    font-weight: 700;
+}
+.cat-val {
+    font-size: 11px;
+    color: #9C9A92;
+    margin-top: 2px;
+}
+.history-row-arrow {
+    color: #D2D0C8;
+    font-size: 13px;
+}
+
+/* 登録画面の支出・収入タブ切り替え切り替えスイッチ（画像2枚目完全再現） */
+.type-select-tabs {
+    display: flex;
+    background: #EAE8DF;
+    border-radius: 14px;
+    padding: 3px;
+    gap: 4px;
+}
+.type-tab-label {
+    flex: 1;
+    cursor: pointer;
+}
+.type-tab-label input {
+    display: none;
+}
+.tab-button-inner {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #7C7A72;
+    transition: all 0.2s;
+}
+.type-tab-label input:checked + .tab-button-inner {
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.type-tab-label input:checked + .tab-button-inner.text-expense {
+    color: #E79A82;
+    border: 1px solid #F5D3C6;
+}
+.type-tab-label input:checked + .tab-button-inner.text-income {
+    color: #6FBF73;
+    border: 1px solid #CBE6C8;
+}
+
+/* よく使う項目 (画像2枚目の丸みを帯びたグリッド) */
+.horizontal-favorites-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+.favorite-item-card-rich {
+    background: white;
+    border: 1px solid #F0EDE4;
+    border-radius: 16px;
+    padding: 10px;
+    min-width: 70px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    cursor: pointer;
+}
+.favorite-item-card-rich .fav-icon {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+.favorite-item-card-rich .fav-name {
+    font-size: 11px;
+    color: #555;
+    font-weight: 500;
+}
+
+/* 入力入力フォームの構造化行（画像2枚目のレイアウト） */
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 4px 16px rgba(140,135,120,0.05);
+    border: 1px solid rgba(230,228,220,0.4);
+}
+.form-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #F5F4EE;
+}
+.form-row:last-of-type {
+    border-bottom: none;
+}
+.form-row-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    margin-right: 12px;
+}
+.form-row label {
+    width: 80px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #4A4842;
+    margin: 0;
+}
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+.form-row input, .form-row select {
+    flex-grow: 1;
+    border: none;
+    background: transparent;
+    padding: 6px;
+    font-size: 15px;
+    color: #333;
+    outline: none;
+}
+.form-row input::placeholder {
+    color: #C2C0B8;
+}
+.unit-text {
+    font-size: 14px;
+    color: #333;
+    padding-left: 5px;
+}
+
+/* 登録登録ボタン（画像イメージの綺麗な深いグリーン） */
+.main-submit-btn {
+    margin-top: 20px;
+    background: #6B9467;
+    color: white;
+    font-weight: bold;
+    padding: 14px;
+    border-radius: 25px;
+    font-size: 16px;
+    box-shadow: 0 4px 10px rgba(107,148,103,0.3);
+}
+
+/* 下部固定の水彩風スズメ */
+.sparrow-avatar-fixed {
+    position: fixed;
+    right: 16px;
+    bottom: 95px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 90;
+    pointer-events: none;
+}
+.sparrow-balloon-rich {
+    background: #EAF2E8;
+    color: #4A6B44;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 6px;
+    border: 1px solid #D8E6D5;
+}
+.sparrow-watercolor-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 4px 12px rgba(107,148,103,0.25);
+    padding: 2px;
+    overflow: hidden;
+}
+.sparrow-watercolor-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* 高級感のあるボトムナビゲーション（中央ボタンの飛び出し完全再現） */
+.bottom-nav-rich {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 68px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 -3px 15px rgba(140,135,120,0.08);
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom); /* iPhoneの下部バー対策 */
+}
+.nav-item-btn {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+}
+.nav-icon {
+    font-size: 20px;
+    color: #A2A0Handle;
+    filter: grayscale(1);
+    opacity: 0.4;
+    transition: all 0.2s;
+}
+.nav-label {
+    font-size: 10px;
+    color: #8C8A82;
+    margin-top: 3px;
+    font-weight: 500;
+}
+.nav-item-btn.active .nav-icon {
+    filter: grayscale(0);
+    opacity: 1;
+    transform: scale(1.1);
+}
+.nav-item-btn.active .nav-label {
+    color: #5B8257;
+    font-weight: bold;
+}
+
+/* 中央の丸いプラス登録ボタンの浮き出し */
+.center-add-button {
+    position: absolute;
+    top: -16px;
+    width: 48px;
+    height: 48px;
+    background: #7FAE7B;
+    color: white;
+    border-radius: 50%;
+    font-size: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(127,174,123,0.4);
+    transition: all 0.2s;
+}
+.nav-item-btn:hover .center-add-button {
+    background: #6B9467;
+}
+
+/* 履歴項目操作用ボタン */
+.history-actions {
+    padding: 0 14px 10px;
+    background: white;
+    text-align: right;
+    border-bottom: 1px solid #F2F1EB;
+}
+
+/* 追加スタイル（Ver.0.5継承用） */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.period-select { display: flex; background: #EAE8DF; border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 15px; }
+.period-btn { padding: 8px; font-size: 14px; border-radius: 10px; background: transparent; color: #666; cursor: pointer; }
+.period-btn.active { background: white; color: #333; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+.report-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+.csv-import-label { display: block; text-align: center; background: #fff; border: 2px dashed #5A9E96; color: #5A9E96; padding: 12px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; }
+.delete-btn { background: #fdf2f2; color: #d9534f; border-radius: 10px; padding: 8px; cursor: pointer; }
