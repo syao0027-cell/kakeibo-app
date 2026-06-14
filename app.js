@@ -704,3 +704,4 @@ function setupSettings() {
                     }
                     importCount++;
                 }
+}
