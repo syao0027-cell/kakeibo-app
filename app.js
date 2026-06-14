@@ -85,6 +85,9 @@ function initHomeDatePicker() {
     }
 }
 
+/* 【追加】index.htmlのセレクトボックスのonchangeイベントから
+  呼び出されるグローバル関数を正しく定義しました。
+*/
 function onHomePeriodChange() {
     loadHistory();
     updateSummary();
@@ -296,7 +299,10 @@ function renderFavorites() {
 
 if (saveBtn) {
     saveBtn.addEventListener("click", () => {
-        const type = document.querySelector('name="type"').value || document.querySelector('input[name="type"]:checked').value;
+        /* 【修正】構文エラーの原因だったセレクタ指定を修正し、
+          チェックされているラジオボタンの値を確実に取得できるようにしました。
+        */
+        const type = document.querySelector('input[name="type"]:checked').value;
         const amount = Number(document.getElementById("amount").value);
         const category = document.getElementById("category").value;
         const memo = document.getElementById("memo").value;
@@ -417,188 +423,3 @@ function setupReportFilters() {
             btnYearly.classList.remove("active");
             initPeriodPicker();
             renderCategoryReport();
-        });
-        btnYearly.addEventListener("click", () => {
-            currentPeriodMode = "yearly";
-            btnYearly.classList.add("active");
-            btnMonthly.classList.remove("active");
-            initPeriodPicker();
-            renderCategoryReport();
-        });
-    }
-
-    if (picker) {
-        picker.addEventListener("change", () => {
-            renderCategoryReport();
-        });
-    }
-}
-
-function renderCategoryReport() {
-    const picker = document.getElementById("report-period-picker");
-    const reportTitle = document.getElementById("report-title");
-    const reportDiv = document.getElementById("category-report");
-    const pieChart = document.getElementById("category-pie-chart");
-
-    if (!picker || !reportDiv) return;
-
-    const selectedPeriod = picker.value;
-    if (!selectedPeriod) {
-        reportDiv.innerHTML = "<p style='text-align:center;color:#999;'>データがありません</p>";
-        if(pieChart) pieChart.style.background = "#eee";
-        return;
-    }
-
-    const data = getKakeiboData();
-    const filtered = data.filter(item => {
-        if (!item.date || item.type !== "expense") return false;
-        return item.date.startsWith(selectedPeriod);
-    });
-
-    let totalExpense = 0;
-    const catTotals = {};
-    filtered.forEach(item => {
-        totalExpense += item.amount;
-        catTotals[item.category] = (catTotals[item.category] || 0) + item.amount;
-    });
-
-    if(reportTitle) reportTitle.textContent = `支出合計: ¥${totalExpense.toLocaleString()}`;
-    reportDiv.innerHTML = "";
-
-    if (totalExpense === 0) {
-        reportDiv.innerHTML = "<p style='text-align:center;color:#999;font-size:13px;'>この期間の支出はありませんチュン！</p>";
-        if (pieChart) pieChart.style.background = "#eee";
-        return;
-    }
-
-    const sortedCats = Object.keys(catTotals).sort((a, b) => catTotals[b] - catTotals[a]);
-    let percentSum = 0;
-    const gradientParts = [];
-
-    sortedCats.forEach(category => {
-        const total = catTotals[category];
-        const percent = (total / totalExpense) * 100;
-        const displayPercent = Math.round(percent);
-        const color = CATEGORY_COLORS[category] || "#A2A09B";
-
-        const startDeg = (percentSum / 100) * 360;
-        percentSum += percent;
-        const endDeg = (percentSum / 100) * 360;
-
-        gradientParts.push(`${color} ${startDeg}deg ${endDeg}deg`);
-
-        const itemDiv = document.createElement("div");
-        itemDiv.className = "report-item";
-        itemDiv.innerHTML = `
-            <span>
-                <span style="display:inline-block; width:12px; height:12px; background:${color}; border-radius:3px; margin-right:6px;"></span>
-                ${category} <small style=\"color:#999; font-size:11px;\">(${displayPercent}%)</small>
-            </span>
-            <strong>¥${total.toLocaleString()}</strong>
-        `;
-        reportDiv.appendChild(itemDiv);
-    });
-
-    if (pieChart && gradientParts.length > 0) {
-        pieChart.style.background = `conic-gradient(${gradientParts.join(", ")})`;
-    }
-}
-
-function setupSettings() {
-    const clearBtn = document.getElementById("clearDataBtn");
-    const exportCsvBtn = document.getElementById("exportCsvBtn");
-    const importCsvFile = document.getElementById("importCsvFile");
-
-    if(clearBtn) {
-        clearBtn.addEventListener("click", () => {
-            if(confirm("すべてのデータを削除します。本当によろしいですか？")) {
-                localStorage.setItem("kakeibo", JSON.stringify([]));
-                initApp();
-                alert("データを初期化しました。");
-                document.querySelector('[data-tab="home-tab"]').click();
-            }
-        });
-    }
-
-    if(exportCsvBtn) {
-        exportCsvBtn.addEventListener("click", () => {
-            const data = getKakeiboData();
-            if(data.length === 0) {
-                alert("エクスポートするデータがないチュン！");
-                return;
-            }
-            let csvContent = "id,date,type,category,amount,memo\n";
-            data.forEach(item => {
-                const memoEscaped = (item.memo || "").replace(/"/g, '""');
-                csvContent += `${item.id},${item.date},${item.type},${item.category},${item.amount},"${memoEscaped}"\n`;
-            });
-
-            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-            const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `kakeibo_backup_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    }
-
-    if(importCsvFile) {
-        importCsvFile.addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const text = evt.target.result;
-                const lines = text.split("\n");
-                let data = getKakeiboData();
-                let importCount = 0;
-
-                for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim();
-                    if (!line) continue;
-
-                    const parts = line.split(",");
-                    if (parts.length < 5) continue;
-
-                    const id = parts[0] ? Number(parts[0]) : Date.now() + i;
-                    const date = parts[1];
-                    const type = parts[2];
-                    const category = parts[3];
-                    const amount = Number(parts[4]);
-                    let memo = parts[5] || "";
-                    
-                    if(memo.startsWith('"') && memo.endsWith('"')) {
-                        memo = memo.slice(1, -1).replace(/""/g, '"');
-                    }
-                    const existingIndex = data.findIndex(item => Number(item.id) === Number(id));
-                    const record = { id, date, type, category, amount, memo };
-
-                    if(existingIndex !== -1) {
-                        data[existingIndex] = record;
-                    } else {
-                        data.push(record);
-                    }
-                    importCount++;
-                }
-                localStorage.setItem("kakeibo", JSON.stringify(data));
-                initApp();
-                alert(`${importCount}件のデータをインポートしました！`);
-                e.target.value = "";
-                document.querySelector('[data-tab="home-tab"]').click();
-            };
-            reader.readAsText(file);
-        });
-    }
-}
-
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('serviceWorker.js')
-            .then((reg) => console.log('PWA Service Worker 登録完了範囲:', reg.scope))
-            .catch((err) => console.error('PWA 登録失敗:', err));
-    });
-}
