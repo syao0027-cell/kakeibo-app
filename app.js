@@ -13,29 +13,30 @@ const CATEGORY_COLORS = {
 };
 
 // 初期設定: 日付フォームに今日を設定
-document.getElementById("date").value = new Date().toISOString().split("T")[0];
-
-function initApp() {
-    checkAndInsertSampleData(); // 【追加】初回起動時にサンプルデータを挿入
-    initHomeDatePicker();  
-    loadHistory();
-    updateSummary();
-    renderFavorites();
-    initPeriodPicker();    
-    renderCategoryReport(); 
-    updateSparrowSpeech();      // 【追加】チュンちゃんのお喋りロジックを更新
+if (document.getElementById("date")) {
+    document.getElementById("date").value = new Date().toISOString().split("T")[0];
 }
 
-// 起動
-initApp();
+function initApp() {
+    checkAndInsertSampleData(); // 初回起動時にサンプルデータを挿入
+    initHomeDatePicker();       // まずプルダウンの選択肢を正しく生成・選択する
+    updateSummary();            // 集計値を計算
+    loadHistory();              // 履歴を描画
+    renderFavorites();          // よく使う項目を描画
+    initPeriodPicker();         // 集計画面用のプルダウンを初期化
+    renderCategoryReport();     // 集計レポート・グラフ生成
+    updateSparrowSpeech();      // チュンちゃんのお喋りロジックを更新
+}
+
+// 起動処理の順序を整理
 setupTabs();
 setupSettings();
 setupReportFilters();
+initApp(); // すべてのイベント準備が整ってから一気に初期化
 
-// ==================== 【新機能】初期データ（サンプル）の充実化 ====================
+// ==================== 初期データ（サンプル）の充実化 ====================
 function checkAndInsertSampleData() {
     const data = localStorage.getItem("kakeibo");
-    // まだデータが一度も作られていない場合（nullのとき）にダミーを投入
     if (!data) {
         const now = new Date();
         const year = now.getFullYear();
@@ -51,7 +52,7 @@ function checkAndInsertSampleData() {
     }
 }
 
-// ==================== 【新機能】チュンちゃんのお喋り連動システム ====================
+// ==================== チュンちゃんのお喋り連動システム ====================
 function updateSparrowSpeech(customText = null) {
     const speech = document.getElementById("sparrow-speech");
     if (!speech) return;
@@ -81,30 +82,26 @@ function updateSparrowSpeech(customText = null) {
         }
     });
 
-    // 1. 収入がまだ入っていない、または支出ゼロの初期状態
     if (income === 0 && expense === 0) {
         speech.textContent = "まずは『よく使う項目』をタップしてテストしてみてね！チュン！";
         return;
     }
 
-    // 2. 食費の割合が全体の45%を超えている場合への警告
     if (expense > 0 && (foodExpense / expense) > 0.45) {
         speech.textContent = "今月は食費がちょっと多めかも？美味しいものの食べすぎ注意だチュン！";
         return;
     }
 
-    // 3. 収入ベースの残高計算（目安の予算ベースでもOK。ここでは簡易的に収入からの残金）
     if (income > 0) {
         const remaining = income - expense;
         if (remaining <= 0) {
             speech.textContent = "ひぇ〜！今月の収支が赤字になっちゃいそうだチュン！お財布を締めよう！";
         } else if (remaining < 30000) {
-            speech.textContent = `今月はあと「¥${remaining.toLocaleString()}」使えるよ！大切に使おうね♪`;
+            speech.textContent = `今月はあと「¥${remaining.toLocaleString()}」使えるよ！大切使いおうね♪`;
         } else {
             speech.textContent = "いい調子だチュン！このペースで無駄遣いを減らしていこう！";
         }
     } else {
-        // 収入が未入力で支出だけある場合
         speech.textContent = `今月の支出は ¥${expense.toLocaleString()} だよ。しっかり記録できてて偉いチュン！`;
     }
 }
@@ -129,7 +126,6 @@ function setupTabs() {
             });
             window.scrollTo(0, 0);
             
-            // タブ移動のタイミングでもベースのチュンちゃんのセリフを切り替え
             if (targetTab === "form-tab") {
                 updateSparrowSpeech("忘れずに記録しよう♪ 下のフォームを埋めるんだチュン！");
             } else if (targetTab === "summary-tab") {
@@ -137,7 +133,7 @@ function setupTabs() {
             } else if (targetTab === "settings-tab") {
                 updateSparrowSpeech("バックアップや初期化はここで管理するチュン。");
             } else {
-                updateSparrowSpeech(); // ホームは自動分析セリフ
+                updateSparrowSpeech(); 
             }
         });
     });
@@ -151,6 +147,8 @@ function onHomePeriodChange() {
 // ホーム画面上部の日付フィルターの初期化
 function initHomeDatePicker() {
     const picker = document.getElementById("home-date-picker");
+    if (!picker) return;
+
     const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
     const periods = new Set();
 
@@ -165,7 +163,9 @@ function initHomeDatePicker() {
     });
 
     const sortedPeriods = Array.from(periods).sort((a, b) => b.localeCompare(a));
-    const currentSelected = picker.value;
+    
+    // バグ修正: 初回読み込みで選択肢が消えるのを防ぐため、現在の値の退避を安全に行う
+    const currentSelected = picker.value || currentPeriod;
     picker.innerHTML = "";
 
     sortedPeriods.forEach(p => {
@@ -175,14 +175,14 @@ function initHomeDatePicker() {
         picker.appendChild(opt);
     });
 
-    if (currentSelected && sortedPeriods.includes(currentSelected)) {
+    if (sortedPeriods.includes(currentSelected)) {
         picker.value = currentSelected;
     } else {
         picker.value = currentPeriod;
     }
 }
 
-// ==================== データ保存・編集・削除 ====================
+// ==================== データ保存 ====================
 function saveData(){
     const type = document.querySelector('input[name="type"]:checked').value;
     const amount = Number(document.getElementById("amount").value);
@@ -213,12 +213,21 @@ function saveData(){
     document.getElementById("amount").value = "";
     document.getElementById("memo").value = "";
 
-    initApp();
+    // 登録後にホームの日付フィルターを再生成してから戻る
+    initHomeDatePicker();
+    updateSummary();
+    loadHistory();
+    renderFavorites();
+    initPeriodPicker();    
+    renderCategoryReport(); 
+    updateSparrowSpeech();
+
     document.querySelector('[data-tab="home-tab"]').click();
 }
 
-// ==================== 【UI改善】履歴リストの描画とアコーディオン制御 ====================
+// ==================== 履歴リストの描画とアコーディオン制御 ====================
 function loadHistory(){
+    if (!historyDiv) return;
     const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
     data.sort((a,b) => new Date(b.date) - new Date(a.date));
 
@@ -235,7 +244,6 @@ function loadHistory(){
         if (matches) targetYearMonth = `${matches[1]}-${matches[2]}`;
     }
 
-    // 丸角のコンテナボックスを1つ生成してそこにアイテムを詰める
     const containerBox = document.createElement("div");
     containerBox.className = "history-container-box";
 
@@ -256,7 +264,6 @@ function loadHistory(){
         if (item.category === "趣味") catIcon = "🎮";
         if (item.category === "日用品") catIcon = "🏡";
 
-        // メイン行
         const rowDiv = document.createElement("div");
         rowDiv.className = "rich-history-item";
         rowDiv.innerHTML = `
@@ -280,7 +287,6 @@ function loadHistory(){
             <div class="history-row-arrow" id="arrow-${item.id}">＞</div>
         `;
 
-        // 隠されている操作パネル（スライドして出てくる）
         const actionDiv = document.createElement("div");
         actionDiv.className = "history-actions";
         actionDiv.id = `actions-${item.id}`;
@@ -289,12 +295,10 @@ function loadHistory(){
             <button class="action-btn delete-btn-action" onclick="event.stopPropagation(); deleteRecord(${item.id})">削除</button>
         `;
 
-        // タップしたときにアコーディオンを開閉するクリックイベント
         rowDiv.addEventListener("click", () => {
             const panel = document.getElementById(`actions-${item.id}`);
             const arrow = document.getElementById(`arrow-${item.id}`);
             
-            // 他の開いているパネルを閉じる（お好みで）
             document.querySelectorAll(".history-actions").forEach(p => {
                 if (p.id !== `actions-${item.id}`) p.classList.remove("open");
             });
@@ -302,7 +306,6 @@ function loadHistory(){
                 if (a.id !== `arrow-${item.id}`) a.classList.remove("open");
             });
 
-            // トグル処理
             panel.classList.toggle("open");
             arrow.classList.toggle("open");
         });
@@ -410,11 +413,11 @@ function updateSummary(){
         }
     });
 
-    document.getElementById("monthlyIncome").textContent = "¥" + income.toLocaleString();
-    document.getElementById("monthlyExpense").textContent = "¥" + expense.toLocaleString();
+    if(document.getElementById("monthlyIncome")) document.getElementById("monthlyIncome").textContent = "¥" + income.toLocaleString();
+    if(document.getElementById("monthlyExpense")) document.getElementById("monthlyExpense").textContent = "¥" + expense.toLocaleString();
     
     const balance = income - expense;
-    document.getElementById("monthlyBalance").textContent = (balance >= 0 ? "+" : "") + "¥" + balance.toLocaleString();
+    if(document.getElementById("monthlyBalance")) document.getElementById("monthlyBalance").textContent = (balance >= 0 ? "+" : "") + "¥" + balance.toLocaleString();
 }
 
 function editRecord(id){
@@ -433,9 +436,11 @@ function editRecord(id){
     document.querySelector('[data-tab="form-tab"]').click();
 }
 
-saveBtn.addEventListener("click", saveData);
+if(saveBtn) {
+    saveBtn.addEventListener("click", saveData);
+}
 
-// ==================== ③ 集計画面 ====================
+// ==================== 集計画面 ====================
 function setupReportFilters() {
     const btnMonthly = document.getElementById("btn-monthly");
     const btnYearly = document.getElementById("btn-yearly");
@@ -446,20 +451,24 @@ function setupReportFilters() {
     btnMonthly.addEventListener("click", () => {
         currentPeriodMode = "monthly";
         btnMonthly.classList.add("active");
-        btnYearly.classList.remove("active");
+        if(btnYearly) btnYearly.classList.remove("active");
         initPeriodPicker();
         renderCategoryReport();
     });
 
-    btnYearly.addEventListener("click", () => {
-        currentPeriodMode = "yearly";
-        btnYearly.classList.add("active");
-        btnMonthly.classList.remove("active");
-        initPeriodPicker();
-        renderCategoryReport();
-    });
+    if(btnYearly) {
+        btnYearly.addEventListener("click", () => {
+            currentPeriodMode = "yearly";
+            btnYearly.classList.add("active");
+            btnMonthly.classList.remove("active");
+            initPeriodPicker();
+            renderCategoryReport();
+        });
+    }
 
-    picker.addEventListener("change", renderCategoryReport);
+    if(picker) {
+        picker.addEventListener("change", renderCategoryReport);
+    }
 }
 
 function initPeriodPicker() {
@@ -503,7 +512,7 @@ function initPeriodPicker() {
     }
 }
 
-// ==================== 【新機能】グラフの導入 & レポート描画 ====================
+// ==================== グラフの導入 & レポート描画 ====================
 function renderCategoryReport() {
     const reportDiv = document.getElementById("category-report");
     const picker = document.getElementById("report-period-picker");
@@ -533,19 +542,19 @@ function renderCategoryReport() {
     });
 
     reportDiv.innerHTML = "";
-    document.getElementById("report-title").textContent = `${currentPeriodMode === 'monthly' ? '月間' : '年間'}支出合計: ¥${totalSum.toLocaleString()}`;
+    if(document.getElementById("report-title")) {
+        document.getElementById("report-title").textContent = `${currentPeriodMode === 'monthly' ? '月間' : '年間'}支出合計: ¥${totalSum.toLocaleString()}`;
+    }
 
     const entries = Object.entries(categoryTotals);
     if(entries.length === 0) {
         reportDiv.innerHTML = '<p style="color:#999; text-align:center; margin:10px 0;">データがありません</p>';
-        if (pieChart) pieChart.style.background = "#eee"; // 空白状態
+        if (pieChart) pieChart.style.background = "#eee"; 
         return;
     }
 
-    // 降順にソートして並び替え
     entries.sort((a, b) => b[1] - a[1]);
 
-    // --- CSS conic-gradientを使った円グラフのスタイル計算 ---
     let gradientParts = [];
     let currentPercentSum = 0;
 
@@ -554,14 +563,12 @@ function renderCategoryReport() {
         const displayPercent = Math.round(percent);
         const color = CATEGORY_COLORS[category] || "#A2A09B";
 
-        // グラデーションの開始位置と終了位置を計算
         const startDeg = (currentPercentSum / 100) * 360;
         currentPercentSum += percent;
         const endDeg = (currentPercentSum / 100) * 360;
 
         gradientParts.push(`${color} ${startDeg}deg ${endDeg}deg`);
 
-        // レポート行を生成
         const itemDiv = document.createElement("div");
         itemDiv.className = "report-item";
         itemDiv.innerHTML = `
@@ -574,27 +581,103 @@ function renderCategoryReport() {
         reportDiv.appendChild(itemDiv);
     });
 
-    // 円グラフの背景スタイルを動的に書き換える
     if (pieChart) {
         pieChart.style.background = `conic-gradient(${gradientParts.join(", ")})`;
     }
 }
 
-// ==================== ④ 設定画面 ====================
+// ==================== 設定画面 ====================
 function setupSettings() {
     const clearBtn = document.getElementById("clearDataBtn");
-    if(!clearBtn) return;
+    if(clearBtn) {
+        clearBtn.addEventListener("click", () => {
+            if(confirm("すべてのデータを削除します。本当によろしいですか？")) {
+                localStorage.removeItem("kakeibo");
+                localStorage.setItem("kakeibo", JSON.stringify([]));
+                initApp();
+                alert("データを初期化しました。");
+                document.querySelector('[data-tab="home-tab"]').click();
+            }
+        });
+    }
 
-    clearBtn.addEventListener("click", () => {
-        if(confirm("すべてのデータを削除します。本当によろしいですか？")) {
-            localStorage.removeItem("kakeibo");
-            // 完全に初期化されたらサンプルも作らないように、空配列で上書き
-            localStorage.setItem("kakeibo", JSON.stringify([]));
-            initApp();
-            alert("データを初期化しました。");
-            document.querySelector('[data-tab="home-tab"]').click();
-        }
+    const exportBtn = document.getElementById("exportCsvBtn");
+    if(exportBtn) {
+        exportBtn.addEventListener("click", () => {
+            const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
+            if(data.length === 0) {
+                alert("出力するデータがありません。");
+                return;
+            }
+            let csvContent = "\uFEFF" + "ID,日付,タイプ,カテゴリ,金額,メモ\n";
+            data.forEach(item => {
+                csvContent += `${item.id},${item.date},${item.type},${item.category},${item.amount},"${(item.memo || '').replace(/"/g, '""')}"\n`;
+            });
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `kakeibo_backup_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    }
+
+    const importFile = document.getElementById("importCsvFile");
+    if(importFile) {
+        importFile.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const text = event.target.result;
+                const lines = text.split(/\r\n|\n/);
+                const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
+                let importCount = 0;
+
+                for(let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if(!line) continue;
+                    const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if(parts.length < 5) continue;
+
+                    const id = parts[0] ? Number(parts[0]) : Date.now() + i;
+                    const date = parts[1];
+                    const type = parts[2];
+                    const category = parts[3];
+                    const amount = Number(parts[4]);
+                    let memo = parts[5] || "";
+                    
+                    if(memo.startsWith('"') && memo.endsWith('"')) {
+                        memo = memo.slice(1, -1).replace(/""/g, '"');
+                    }
+                    const existingIndex = data.findIndex(item => Number(item.id) === Number(id));
+                    const record = { id, date, type, category, amount, memo };
+
+                    if(existingIndex !== -1) {
+                        data[existingIndex] = record;
+                    } else {
+                        data.push(record);
+                    }
+                    importCount++;
+                }
+                localStorage.setItem("kakeibo", JSON.stringify(data));
+                initApp();
+                alert(`${importCount}件のデータをインポートしました！`);
+                e.target.value = "";
+                document.querySelector('[data-tab="home-tab"]').click();
+            };
+            reader.readAsText(file);
+        });
+    }
+}
+
+// ==================== PWA サービスワーカー自動登録 ====================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('serviceWorker.js')
+            .then((reg) => console.log('PWA Service Worker 登録完了範囲:', reg.scope))
+            .catch((err) => console.error('PWA 登録失敗:', err));
     });
-
-    document.getElementById("exportCsvBtn").addEventListener("click", () => {
-        const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
+}
