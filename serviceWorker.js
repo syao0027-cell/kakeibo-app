@@ -1,11 +1,11 @@
-const CACHE_NAME = 'kakeibo-app-v0.7';
+const CACHE_NAME = 'kakeibo-app-v0.8';
 const ASSETS = [
   './',
   'index.html',
   'style.css',
   'app.js',
   'manifest.json',
-  'icon.png' // チュンちゃんの画像をしっかりローカルキャッシュ
+  'icon.png'
 ];
 
 self.addEventListener('install', (event) => {

@@ -2,11 +2,10 @@
    家計簿アプリ 水彩アート・モダン UIデザインスタイル（仕様書準拠）
    ========================================================================== */
 
-/* 全体のベース設定 */
 body {
     margin: 0;
     padding: 0;
-    background-color: #FFFAF1; /* キャンバスのような温かみのあるアイボリーホワイト */
+    background-color: #FFFAF1;
     font-family: 'Noto Sans JP', sans-serif;
     color: #4A4842;
     padding-bottom: 120px;
@@ -14,7 +13,6 @@ body {
     position: relative;
 }
 
-/* 画面上部の水彩風木の葉グラデーション（背景演出） */
 .leaf-bg-top-left {
     position: absolute;
     top: -60px;
@@ -36,7 +34,6 @@ body {
     z-index: 1;
 }
 
-/* モバイルファーストのコンテナ */
 .container {
     max-width: 430px;
     margin: auto;
@@ -46,9 +43,7 @@ body {
     z-index: 10;
 }
 
-/* ==========================================================================
-   ヘッダー ＆ スズメのチュンちゃんエリア
-   ========================================================================== */
+/* ヘッダー */
 .app-header {
     display: flex;
     align-items: center;
@@ -62,7 +57,6 @@ body {
     gap: 12px;
 }
 
-/* スズメの丸い水彩ラッパー */
 .header-sparrow-left {
     width: 50px;
     height: 50px;
@@ -104,7 +98,7 @@ body {
     box-shadow: 0 4px 10px rgba(0,0,0,0.03);
 }
 
-/* ホーム画面の年月セレクトボックス */
+/* フィルター */
 .home-period-filter {
     margin-bottom: 24px;
     text-align: left;
@@ -124,7 +118,7 @@ body {
     font-weight: 700;
     font-family: inherit;
     color: #4A4842;
-    border-radius: 30px; /* 極端な角丸 */
+    border-radius: 30px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.02);
     cursor: pointer;
     outline: none;
@@ -141,14 +135,12 @@ body {
     pointer-events: none;
 }
 
-/* ==========================================================================
-   サマリーカード（スーパー楕円・クリーンデザイン）
-   ========================================================================== */
+/* サマリーカード */
 .summary-card-rich {
     background: #FFFFFF;
-    border-radius: 32px; /* イメージ画像のような大きな角丸 */
+    border-radius: 32px;
     padding: 24px;
-    box-shadow: 0 12px 30px rgba(74, 72, 66, 0.04); /* 非常にソフトな影 */
+    box-shadow: 0 12px 30px rgba(74, 72, 66, 0.04);
     border: 1px solid rgba(230,228,220,0.3);
     margin-bottom: 28px;
 }
@@ -170,7 +162,7 @@ body {
 .summary-main-balance .amount {
     font-size: 34px;
     font-weight: 700;
-    color: #DEB34A; /* 実りのサンフラワーイエロー */
+    color: #DEB34A;
 }
 
 .summary-row-two-col {
@@ -210,9 +202,7 @@ body {
     color: #3C3A35;
 }
 
-/* ==========================================================================
-   よく使う項目（お気に入り）
-   ========================================================================= */
+/* よく使う項目 */
 .section-headline {
     font-size: 16px;
     font-weight: 700;
@@ -245,31 +235,21 @@ body {
     transition: transform 0.2s;
 }
 
-.favorite-item-card-rich:active {
-    transform: scale(0.95);
-}
+.favorite-item-card-rich:active { transform: scale(0.95); }
+.favorite-item-card-rich .fav-icon { font-size: 22px; margin-bottom: 6px; }
+.favorite-item-card-rich .fav-name { font-size: 12px; font-weight: 700; color: #6D6B64; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.favorite-item-card-rich .fav-icon {
-    font-size: 22px;
-    margin-bottom: 6px;
-}
-
-.favorite-item-card-rich .fav-name {
-    font-size: 12px;
-    font-weight: 700;
-    color: #6D6B64;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* ==========================================================================
-   履歴リスト表示（アコーディオン）
-   ========================================================================== */
+/* 履歴リスト表示 */
 .history-container-box {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.history-group-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .rich-history-item {
@@ -281,7 +261,6 @@ body {
     box-shadow: 0 6px 16px rgba(74, 72, 66, 0.03);
     border: 1px solid rgba(230,228,220,0.3);
     cursor: pointer;
-    position: relative;
 }
 
 .history-date-box {
@@ -307,78 +286,35 @@ body {
 .badge-income { background: #EAF4E8; color: #7FAE7B; }
 .badge-expense { background: #FCEFEA; color: #E79A82; }
 
-.history-main-info {
-    flex-grow: 1;
-}
+.history-main-info { flex-grow: 1; }
+.history-title { font-size: 15px; font-weight: 700; color: #3C3A35; margin-bottom: 2px; }
+.history-memo-sub { font-size: 11px; color: #A2A09B; }
 
-.history-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #3C3A35;
-    margin-bottom: 2px;
-}
+.history-right-amount { text-align: right; margin-right: 10px; }
+.history-right-amount .amt-val { font-size: 16px; font-weight: 700; }
+.history-right-amount .cat-val { font-size: 11px; color: #A2A09B; margin-top: 2px; }
 
-.history-memo-sub {
-    font-size: 11px;
-    color: #A2A09B;
-}
+.history-row-arrow { color: #C2C0B9; font-size: 12px; transition: transform 0.2s; }
+.history-row-arrow.open { transform: rotate(90deg); }
 
-.history-right-amount {
-    text-align: right;
-    margin-right: 10px;
-}
-
-.history-right-amount .amt-val {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.history-right-amount .cat-val {
-    font-size: 11px;
-    color: #A2A09B;
-    margin-top: 2px;
-}
-
-.history-row-arrow {
-    color: #C2C0B9;
-    font-size: 12px;
-    transition: transform 0.2s;
-}
-.history-row-arrow.open {
-    transform: rotate(90deg);
-}
-
-/* 履歴アコーディオンのボタンエリア */
 .history-actions {
     display: none;
     padding: 10px 16px;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 16px;
-    text-align: right;
+    justify-content: flex-end;
     gap: 8px;
     margin-top: -6px;
     margin-bottom: 4px;
     border: 1px solid rgba(230,228,220,0.2);
 }
-.history-actions.open {
-    display: flex;
-    justify-content: flex-end;
-}
+.history-actions.open { display: flex; }
 
-.action-btn {
-    border: none;
-    padding: 6px 14px;
-    font-size: 12px;
-    font-weight: 700;
-    border-radius: 14px;
-    cursor: pointer;
-}
+.action-btn { border: none; padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 14px; cursor: pointer; }
 .edit-btn { background: #EAE8DF; color: #6D6B64; }
 .delete-btn-action { background: #FCEFEA; color: #E79A82; }
 
-/* ==========================================================================
-   手描き風 入力フォーム ＆ 設定
-   ========================================================================== */
+/* 入力フォーム & 設定カード */
 .card {
     background: white;
     border-radius: 32px;
@@ -388,295 +324,52 @@ body {
     margin-bottom: 24px;
 }
 
-.card h2 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #3C3A35;
-}
+.card h2 { font-size: 18px; font-weight: 700; margin-top: 0; margin-bottom: 20px; color: #3C3A35; }
 
-.radio-group-rich {
-    display: flex;
-    background: #F2F0E8;
-    border-radius: 20px;
-    padding: 4px;
-    gap: 4px;
-    margin-bottom: 20px;
-}
-
-.radio-label-rich {
-    flex: 1;
-    text-align: center;
-    padding: 10px 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: #8C8A82;
-    border-radius: 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
+.radio-group-rich { display: flex; background: #F2F0E8; border-radius: 20px; padding: 4px; gap: 4px; margin-bottom: 20px; }
+.radio-label-rich { flex: 1; text-align: center; padding: 10px 0; font-size: 14px; font-weight: 700; color: #8C8A82; border-radius: 16px; cursor: pointer; transition: all 0.2s; }
 .radio-group-rich input[type="radio"] { display: none; }
-.radio-group-rich input[type="radio"]:checked + .radio-label-rich {
-    background: white;
-    color: #4A4842;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-}
+.radio-group-rich input[type="radio"]:checked + .radio-label-rich { background: white; color: #4A4842; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
 
-.form-group-rich {
-    margin-bottom: 18px;
-    text-align: left;
+.form-group-rich { margin-bottom: 18px; text-align: left; }
+.form-group-rich label { display: block; font-size: 13px; font-weight: 700; color: #6D6B64; margin-bottom: 6px; padding-left: 4px; }
+.form-group-rich input[type="number"], .form-group-rich input[type="text"], .form-group-rich input[type="date"], .form-group-rich select {
+    width: 100%; box-sizing: border-box; background: #FDFBF7; border: 1px solid rgba(230,228,220,0.8); border-radius: 18px; padding: 12px 16px; font-size: 15px; color: #4A4842; font-family: inherit; outline: none;
 }
+.form-group-rich input:focus, .form-group-rich select:focus { border-color: #7FAE7B; background: white; }
 
-.form-group-rich label {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    color: #6D6B64;
-    margin-bottom: 6px;
-    padding-left: 4px;
-}
+.primary-btn-rich { width: 100%; border: none; background: #7FAE7B; color: white; padding: 14px; font-size: 16px; font-weight: 700; border-radius: 24px; cursor: pointer; box-shadow: 0 6px 20px rgba(127,174,123,0.3); transition: all 0.2s; }
+.primary-btn-rich:active { transform: scale(0.98); box-shadow: 0 3px 10px rgba(127,174,123,0.2); }
 
-.form-group-rich input[type="number"],
-.form-group-rich input[type="text"],
-.form-group-rich input[type="date"],
-.form-group-rich select {
-    width: 100%;
-    box-sizing: border-box;
-    background: #FDFBF7;
-    border: 1px solid rgba(230,228,220,0.8);
-    border-radius: 18px;
-    padding: 12px 16px;
-    font-size: 15px;
-    color: #4A4842;
-    font-family: inherit;
-    outline: none;
-}
+.csv-import-label { display: block; text-align: center; background: white; border: 2px dashed rgba(230,228,220,1); padding: 14px; border-radius: 20px; font-size: 14px; font-weight: 700; color: #6D6B64; cursor: pointer; margin-bottom: 20px; }
+.delete-btn { background: #FCEFEA; color: #E79A82; border: none; border-radius: 20px; cursor: pointer; font-weight: 700; }
 
-.form-group-rich input:focus,
-.form-group-rich select:focus {
-    border-color: #7FAE7B;
-    background: white;
-}
+/* 集計画面 */
+.chart-box-rich { display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
+.pie-chart-rich { width: 180px; height: 180px; border-radius: 50%; background: conic-gradient(#eee 0deg 360deg); position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.02), 0 8px 24px rgba(74,72,66,0.05); }
+.pie-chart-rich::after { content: ""; position: absolute; width: 110px; height: 110px; background: white; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-/* プライマリボタン（水彩エッジ風） */
-.primary-btn-rich {
-    width: 100%;
-    border: none;
-    background: #7FAE7B; /* セージグリーン */
-    color: white;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 700;
-    border-radius: 24px;
-    cursor: pointer;
-    box-shadow: 0 6px 20px rgba(127,174,123,0.3);
-    transition: all 0.2s;
-}
-.primary-btn-rich:active {
-    transform: scale(0.98);
-    box-shadow: 0 3px 10px rgba(127,174,123,0.2);
-}
-
-.csv-import-label {
-    display: block;
-    text-align: center;
-    background: white;
-    border: 2px dashed rgba(230,228,220,1);
-    padding: 14px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 700;
-    color: #6D6B64;
-    cursor: pointer;
-    margin-bottom: 20px;
-}
-
-.delete-btn {
-    background: #FCEFEA;
-    color: #E79A82;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 700;
-}
-
-/* ==========================================================================
-   集計画面・水彩サークルグラフ
-   ========================================================================== */
-.chart-box-rich {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 20px 0;
-}
-
-.pie-chart-rich {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    background: conic-gradient(#eee 0deg 360deg);
-    position: relative;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.02), 0 8px 24px rgba(74,72,66,0.05);
-}
-
-/* 真ん中をくり抜いてドーナツにする */
-.pie-chart-rich::after {
-    content: "";
-    position: absolute;
-    width: 110px;
-    height: 110px;
-    background: white;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.report-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 6px;
-    border-bottom: 1px solid #FDFBF7;
-    font-size: 14px;
-}
+.report-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 6px; border-bottom: 1px solid #FDFBF7; font-size: 14px; }
 .report-item:last-child { border: none; }
 
-/* ==========================================================================
-   チュンちゃんのお喋りアバター（固定配置・水彩バルーン）
-   ========================================================================== */
-.sparrow-avatar-fixed {
-    position: fixed;
-    bottom: 95px;
-    right: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    z-index: 999;
-    pointer-events: none;
-}
+/* チュンちゃん（お喋り固定アバター） */
+.sparrow-avatar-fixed { position: fixed; bottom: 95px; right: 20px; display: flex; flex-direction: column; align-items: flex-end; z-index: 999; pointer-events: none; }
+.sparrow-balloon-rich { pointer-events: auto; background: white; border: 1px solid rgba(230,228,220,0.6); padding: 10px 16px; border-radius: 20px 20px 4px 20px; font-size: 12px; font-weight: 700; color: #4A4842; max-width: 180px; box-shadow: 0 6px 20px rgba(74, 72, 66, 0.06); margin-bottom: 8px; line-height: 1.4; }
+.sparrow-watercolor-wrapper { pointer-events: auto; width: 64px; height: 64px; background: white; border-radius: 50%; box-shadow: 0 6px 18px rgba(74, 72, 66, 0.08); border: 2px solid white; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.sparrow-watercolor-wrapper img { width: 85%; height: 85%; object-fit: contain; }
 
-.sparrow-balloon-rich {
-    pointer-events: auto;
-    background: white;
-    border: 1px solid rgba(230,228,220,0.6);
-    padding: 10px 16px;
-    border-radius: 20px 20px 4px 20px; /* 特徴的な吹き出しの角丸 */
-    font-size: 12px;
-    font-weight: 700;
-    color: #4A4842;
-    max-width: 180px;
-    box-shadow: 0 6px 20px rgba(74, 72, 66, 0.06);
-    margin-bottom: 8px;
-    position: relative;
-    line-height: 1.4;
-}
+/* ボトムナビ */
+.bottom-nav-rich { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; height: 66px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 33px; box-shadow: 0 8px 30px rgba(74, 72, 66, 0.08); border: 1px solid rgba(230,228,220,0.4); display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding: 0 10px; }
+.nav-item-btn { background: none; border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; height: 100%; cursor: pointer; position: relative; padding: 0; }
+.nav-icon { font-size: 18px; opacity: 0.4; transition: all 0.2s; }
+.nav-label { font-size: 10px; font-weight: 700; color: #A2A09B; margin-top: 4px; transition: all 0.2s; }
+.nav-item-btn.active .nav-icon { opacity: 1; transform: scale(1.1); }
+.nav-item-btn.active .nav-label { color: #7FAE7B; }
 
-.sparrow-watercolor-wrapper {
-    pointer-events: auto;
-    width: 64px;
-    height: 64px;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 6px 18px rgba(74, 72, 66, 0.08);
-    border: 2px solid white;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
+.center-add-button { position: absolute; top: -18px; width: 52px; height: 52px; background: #7FAE7B; color: white; border-radius: 50%; font-size: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(127,174,123,0.4); transition: background 0.2s, transform 0.2s; }
+.nav-item-btn:active .center-add-button { transform: scale(0.92); }
 
-.sparrow-watercolor-wrapper img {
-    width: 85%;
-    height: 85%;
-    object-fit: contain;
-}
-
-/* ==========================================================================
-   ボトムナビゲーションバー（フローティング・極丸）
-   ========================================================================== */
-.bottom-nav-rich {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-width: 380px;
-    height: 66px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 33px; /* カプセル型 */
-    box-shadow: 0 8px 30px rgba(74, 72, 66, 0.08);
-    border: 1px solid rgba(230,228,220,0.4);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    z-index: 1000;
-    padding: 0 10px;
-}
-
-.nav-item-btn {
-    background: none;
-    border: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    height: 100%;
-    cursor: pointer;
-    position: relative;
-    padding: 0;
-}
-
-.nav-icon {
-    font-size: 18px;
-    opacity: 0.4;
-    transition: all 0.2s;
-}
-
-.nav-label {
-    font-size: 10px;
-    font-weight: 700;
-    color: #A2A09B;
-    margin-top: 4px;
-    transition: all 0.2s;
-}
-
-/* アクティブ時の柔らかな変化 */
-.nav-item-btn.active .nav-icon {
-    opacity: 1;
-    transform: scale(1.1);
-}
-.nav-item-btn.active .nav-label {
-    color: #7FAE7B; /* セージグリーン */
-}
-
-/* 中央の「＋」ボタンをぽこっと浮かせる演出 */
-.center-add-button {
-    position: absolute;
-    top: -18px;
-    width: 52px;
-    height: 52px;
-    background: #7FAE7B;
-    color: white;
-    border-radius: 50%;
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 6px 16px rgba(127,174,123,0.4);
-    transition: background 0.2s, transform 0.2s;
-}
-
-.nav-item-btn:active .center-add-button {
-    transform: scale(0.92);
-}
-
-/* タブコンテンツの制御 */
+/* 基本制御 */
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 .period-select { display: flex; background: #F2F0E8; border-radius: 16px; padding: 4px; gap: 4px; margin-bottom: 20px; }

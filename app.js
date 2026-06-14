@@ -3,7 +3,6 @@ let currentPeriodMode = "monthly";
 const saveBtn = document.getElementById("saveBtn");
 const historyDiv = document.getElementById("history");
 
-// カラーマップ（円グラフとレポート用）
 const CATEGORY_COLORS = {
     "食費": "#E79A82",
     "日用品": "#DEB34A",
@@ -12,29 +11,24 @@ const CATEGORY_COLORS = {
     "その他": "#A2A09B"
 };
 
-// 初期設定: 日付フォームに今日を設定
-if (document.getElementById("date")) {
-    document.getElementById("date").value = new Date().toISOString().split("T")[0];
-}
+document.getElementById("date").value = new Date().toISOString().split("T")[0];
 
 function initApp() {
-    checkAndInsertSampleData(); // 初回起動時にサンプルデータを挿入
-    initHomeDatePicker();       // まずプルダウンの選択肢を正しく生成・選択する
-    updateSummary();            // 集計値を計算
-    loadHistory();              // 履歴を描画
-    renderFavorites();          // よく使う項目を描画
-    initPeriodPicker();         // 集計画面用のプルダウンを初期化
-    renderCategoryReport();     // 集計レポート・グラフ生成
-    updateSparrowSpeech();      // チュンちゃんのお喋りロジックを更新
+    checkAndInsertSampleData(); 
+    initHomeDatePicker();  
+    loadHistory();
+    updateSummary();
+    renderFavorites();
+    initPeriodPicker();    
+    renderCategoryReport(); 
+    updateSparrowSpeech();      
 }
 
-// 起動処理の順序を整理
+initApp();
 setupTabs();
 setupSettings();
 setupReportFilters();
-initApp(); // すべてのイベント準備が整ってから一気に初期化
 
-// ==================== 初期データ（サンプル）の充実化 ====================
 function checkAndInsertSampleData() {
     const data = localStorage.getItem("kakeibo");
     if (!data) {
@@ -43,70 +37,60 @@ function checkAndInsertSampleData() {
         const month = String(now.getMonth() + 1).padStart(2, '0');
         
         const sampleRecords = [
-            { id: Date.now() - 30000, type: "income", amount: 200000, category: "その他", memo: "お給料", date: `${year}-${month}-01` },
-            { id: Date.now() - 20000, type: "expense", amount: 1500, category: "食費", memo: "ランチ代", date: `${year}-${month}-05` },
-            { id: Date.now() - 10000, type: "expense", amount: 2400, category: "日用品", memo: "洗剤・シャンプー", date: `${year}-${month}-10` },
-            { id: Date.now(), type: "expense", amount: 5000, category: "趣味", memo: "ほしかった本・ゲーム", date: `${year}-${month}-12` }
+            { id: 1, date: `${year}-${month}-01`, type: "income", category: "その他", amount: 250000, memo: "お給料" },
+            { id: 2, date: `${year}-${month}-02`, type: "expense", category: "食費", amount: 4500, memo: "スーパーでお買い物" },
+            { id: 3, date: `${year}-${month}-03`, type: "expense", category: "日用品", amount: 1200, memo: "ドラッグストア" },
+            { id: 4, date: `${year}-${month}-05`, type: "expense", category: "趣味", amount: 8000, memo: "ほしかった本やゲーム" }
         ];
         localStorage.setItem("kakeibo", JSON.stringify(sampleRecords));
     }
 }
 
-// ==================== チュンちゃんのお喋り連動システム ====================
-function updateSparrowSpeech(customText = null) {
-    const speech = document.getElementById("sparrow-speech");
-    if (!speech) return;
+function getKakeiboData() {
+    return JSON.parse(localStorage.getItem("kakeibo")) || [];
+}
 
-    if (customText) {
-        speech.textContent = customText;
-        return;
-    }
-
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
+function initHomeDatePicker() {
+    const datePicker = document.getElementById("home-date-picker");
+    if (!datePicker) return;
+    
+    const data = getKakeiboData();
+    const periods = new Set();
+    
     const now = new Date();
-    const targetYear = now.getFullYear();
-    const targetMonth = now.getMonth();
-
-    let income = 0;
-    let expense = 0;
-    let foodExpense = 0;
+    periods.add(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
 
     data.forEach(item => {
-        const d = new Date(item.date);
-        if (d.getFullYear() === targetYear && d.getMonth() === targetMonth) {
-            if (item.type === "income") income += item.amount;
-            if (item.type === "expense") {
-                expense += item.amount;
-                if (item.category === "食費") foodExpense += item.amount;
-            }
+        if (item.date && item.date.length >= 7) {
+            periods.add(item.date.substring(0, 7));
         }
     });
 
-    if (income === 0 && expense === 0) {
-        speech.textContent = "まずは『よく使う項目』をタップしてテストしてみてね！チュン！";
-        return;
-    }
+    const sortedPeriods = Array.from(periods).sort().reverse();
+    const currentSelected = datePicker.value;
+    
+    datePicker.innerHTML = "";
+    sortedPeriods.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        const [y, m] = p.split("-");
+        opt.textContent = `${y}年${parseInt(m, 10)}月`;
+        datePicker.appendChild(opt);
+    });
 
-    if (expense > 0 && (foodExpense / expense) > 0.45) {
-        speech.textContent = "今月は食費がちょっと多めかも？美味しいものの食べすぎ注意だチュン！";
-        return;
-    }
-
-    if (income > 0) {
-        const remaining = income - expense;
-        if (remaining <= 0) {
-            speech.textContent = "ひぇ〜！今月の収支が赤字になっちゃいそうだチュン！お財布を締めよう！";
-        } else if (remaining < 30000) {
-            speech.textContent = `今月はあと「¥${remaining.toLocaleString()}」使えるよ！大切使いおうね♪`;
-        } else {
-            speech.textContent = "いい調子だチュン！このペースで無駄遣いを減らしていこう！";
-        }
+    if (currentSelected && sortedPeriods.includes(currentSelected)) {
+        datePicker.value = currentSelected;
     } else {
-        speech.textContent = `今月の支出は ¥${expense.toLocaleString()} だよ。しっかり記録できてて偉いチュン！`;
+        datePicker.value = sortedPeriods[0];
     }
 }
 
-// ==================== タブ切り替え ====================
+function onHomePeriodChange() {
+    loadHistory();
+    updateSummary();
+    updateSparrowSpeech();
+}
+
 function setupTabs() {
     const navButtons = document.querySelectorAll(".nav-item-btn");
     const tabContents = document.querySelectorAll(".tab-content");
@@ -126,337 +110,314 @@ function setupTabs() {
             });
             window.scrollTo(0, 0);
             
+            const speech = document.getElementById("sparrow-speech");
             if (targetTab === "form-tab") {
-                updateSparrowSpeech("忘れずに記録しよう♪ 下のフォームを埋めるんだチュン！");
+                if(speech) speech.textContent = "忘れずに書くの、えらいチュン！";
             } else if (targetTab === "summary-tab") {
-                updateSparrowSpeech("今月の分析はどうかな？ グラフを見てみよう！");
-            } else if (targetTab === "settings-tab") {
-                updateSparrowSpeech("バックアップや初期化はここで管理するチュン。");
-            } else {
-                updateSparrowSpeech(); 
+                renderCategoryReport();
+                if(speech) speech.textContent = "今月はどんな感じチュン？";
+            } else if (targetTab === "home-tab") {
+                loadHistory();
+                updateSummary();
+                updateSparrowSpeech();
             }
         });
     });
 }
 
-function onHomePeriodChange() {
-    updateSummary();
-    loadHistory();
-}
+function updateSparrowSpeech() {
+    const speech = document.getElementById("sparrow-speech");
+    if (!speech) return;
 
-// ホーム画面上部の日付フィルターの初期化
-function initHomeDatePicker() {
-    const picker = document.getElementById("home-date-picker");
-    if (!picker) return;
+    const data = getKakeiboData();
+    const datePicker = document.getElementById("home-date-picker");
+    if (!datePicker || !datePicker.value) return;
 
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    const periods = new Set();
-
-    const now = new Date();
-    const currentPeriod = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月`;
-    periods.add(currentPeriod);
-
-    data.forEach(item => {
-        if(!item.date) return;
-        const [year, month] = item.date.split("-");
-        periods.add(`${year}年${month}月`);
-    });
-
-    const sortedPeriods = Array.from(periods).sort((a, b) => b.localeCompare(a));
+    const currentPeriod = datePicker.value;
+    const currentData = data.filter(item => item.date && item.date.startsWith(currentPeriod));
     
-    // バグ修正: 初回読み込みで選択肢が消えるのを防ぐため、現在の値の退避を安全に行う
-    const currentSelected = picker.value || currentPeriod;
-    picker.innerHTML = "";
-
-    sortedPeriods.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p;
-        picker.appendChild(opt);
+    let totalExpense = 0;
+    let totalIncome = 0;
+    currentData.forEach(item => {
+        if (item.type === "expense") totalExpense += item.amount;
+        if (item.type === "income") totalIncome += item.amount;
     });
 
-    if (sortedPeriods.includes(currentSelected)) {
-        picker.value = currentSelected;
+    const balance = totalIncome - totalExpense;
+
+    if (currentData.length === 0) {
+        speech.textContent = "まだ今月のデータがないチュン！記録を待ってるよ！";
+    } else if (balance < 0) {
+        speech.textContent = "今月はちょっと赤字チュン…！一緒にがんばろう？";
+    } else if (balance > 100000) {
+        speech.textContent = "貯金がいっぱい！すごすぎるチュン！天才！";
     } else {
-        picker.value = currentPeriod;
+        speech.textContent = "いい調子チュン！この調子でコツコツいこう♪";
     }
 }
 
-// ==================== データ保存 ====================
-function saveData(){
-    const type = document.querySelector('input[name="type"]:checked').value;
-    const amount = Number(document.getElementById("amount").value);
-    const category = document.getElementById("category").value;
-    const memo = document.getElementById("memo").value;
-    const date = document.getElementById("date").value;
+function updateSummary() {
+    const data = getKakeiboData();
+    const datePicker = document.getElementById("home-date-picker");
+    if (!datePicker || !datePicker.value) return;
 
-    if(!amount){
-        alert("金額を入力してください");
-        return;
-    }
+    const currentPeriod = datePicker.value;
+    const filtered = data.filter(item => item.date && item.date.startsWith(currentPeriod));
 
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
+    let income = 0;
+    let expense = 0;
 
-    if(editId){
-        const index = data.findIndex(item => Number(item.id) === Number(editId));
-        if (index !== -1) {
-            data[index] = { id: Number(editId), type, amount, category, memo, date };
-        }
-        editId = null;
-        saveBtn.textContent = "登録する";
+    filtered.forEach(item => {
+        if (item.type === "income") income += item.amount;
+        else expense += item.amount;
+    });
+
+    const balance = income - expense;
+
+    document.getElementById("monthlyIncome").textContent = `¥${income.toLocaleString()}`;
+    document.getElementById("monthlyExpense").textContent = `¥${expense.toLocaleString()}`;
+    
+    const balanceEl = document.getElementById("monthlyBalance");
+    balanceEl.textContent = `¥${balance.toLocaleString()}`;
+    if (balance < 0) {
+        balanceEl.style.color = "#E79A82"; 
     } else {
-        const record = { id: Date.now(), type, amount, category, memo, date };
-        data.push(record);
+        balanceEl.style.color = "#DEB34A"; 
     }
-
-    localStorage.setItem("kakeibo", JSON.stringify(data));
-    document.getElementById("amount").value = "";
-    document.getElementById("memo").value = "";
-
-    // 登録後にホームの日付フィルターを再生成してから戻る
-    initHomeDatePicker();
-    updateSummary();
-    loadHistory();
-    renderFavorites();
-    initPeriodPicker();    
-    renderCategoryReport(); 
-    updateSparrowSpeech();
-
-    document.querySelector('[data-tab="home-tab"]').click();
 }
 
-// ==================== 履歴リストの描画とアコーディオン制御 ====================
-function loadHistory(){
+function loadHistory() {
     if (!historyDiv) return;
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    data.sort((a,b) => new Date(b.date) - new Date(a.date));
-
     historyDiv.innerHTML = "";
-    if(data.length === 0) {
-        historyDiv.innerHTML = '<p style="color:#999; text-align:center; padding: 20px;">履歴がありません</p>';
+
+    const data = getKakeiboData();
+    const datePicker = document.getElementById("home-date-picker");
+    if (!datePicker || !datePicker.value) {
+        historyDiv.innerHTML = "<p style='text-align:center;font-size:13px;color:#999;'>データがありません</p>";
         return;
     }
 
-    const homePicker = document.getElementById("home-date-picker");
-    let targetYearMonth = "";
-    if (homePicker && homePicker.value) {
-        const matches = homePicker.value.match(/(\d+)年(\d+)月/);
-        if (matches) targetYearMonth = `${matches[1]}-${matches[2]}`;
+    const currentPeriod = datePicker.value;
+    const filtered = data.filter(item => item.date && item.date.startsWith(currentPeriod));
+
+    if (filtered.length === 0) {
+        historyDiv.innerHTML = "<p style='text-align:center;font-size:13px;color:#999;'>今月の明細はまだありません</p>";
+        return;
     }
 
-    const containerBox = document.createElement("div");
-    containerBox.className = "history-container-box";
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    let hasItems = false;
+    filtered.forEach(item => {
+        const day = item.date.split("-")[2] || "";
+        const typeBadge = item.type === "income" ? "🌱" : "👛";
+        const badgeClass = item.type === "income" ? "badge-income" : "badge-expense";
+        const amtPrefix = item.type === "income" ? "+" : "-";
+        const amtColor = item.type === "income" ? "#7FAE7B" : "#E79A82";
 
-    data.forEach(item=>{
-        if (targetYearMonth && !item.date.startsWith(targetYearMonth)) return;
-        hasItems = true;
+        const groupWrap = document.createElement("div");
+        groupWrap.className = "history-group-wrap";
 
-        const dateObj = new Date(item.date);
-        const dayNames = ["日", "月", "火", "水", "木", "金", "土"];
-        const dayName = dayNames[dateObj.getDay()];
-        const [,, dayStr] = item.date.split("-");
-
-        let catIcon = "🏷️";
-        if (item.category === "食費") catIcon = "🛒";
-        if (item.category === "交通費") catIcon = "🚗";
-        if (item.category === "趣味") catIcon = "🎮";
-        if (item.category === "日用品") catIcon = "🏡";
-
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "rich-history-item";
-        rowDiv.innerHTML = `
-            <div class="history-date-box">
-                <div>${dateObj.getMonth()+1}/${dayStr}</div>
-                <div style="color:#A2A09B; font-size:11px;">(${dayName})</div>
-            </div>
-            <div class="history-type-badge ${item.type === 'expense' ? 'badge-expense' : 'badge-income'}">
-                ${item.type === 'expense' ? '↓' : '↑'}
-            </div>
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "rich-history-item";
+        itemDiv.innerHTML = `
+            <div class="history-date-box">${day}日</div>
+            <div class="history-type-badge ${badgeClass}">${typeBadge}</div>
             <div class="history-main-info">
-                <div class="history-title">${item.memo || item.category}</div>
-                <div class="history-memo-sub">${item.type === 'expense' ? '支出' : '収入'}</div>
+                <div class="history-title">${item.category}</div>
+                <div class="history-memo-sub">${item.memo || "（メモなし）"}</div>
             </div>
             <div class="history-right-amount">
-                <div class="amt-val" style="color: ${item.type === 'expense' ? '#333' : '#6FBF73'}">
-                    ${item.type === 'expense' ? '-' : '+'}${item.amount.toLocaleString()}円
-                </div>
-                <div class="cat-val">${catIcon} ${item.category}</div>
+                <div class="amt-val" style="color:${amtColor}">${amtPrefix}¥${item.amount.toLocaleString()}</div>
             </div>
-            <div class="history-row-arrow" id="arrow-${item.id}">＞</div>
+            <div class="history-row-arrow" id="arrow-${item.id}">▶</div>
         `;
 
-        const actionDiv = document.createElement("div");
-        actionDiv.className = "history-actions";
-        actionDiv.id = `actions-${item.id}`;
-        actionDiv.innerHTML = `
-            <button class="action-btn edit-btn" onclick="event.stopPropagation(); editRecord(${item.id})">編集</button>
-            <button class="action-btn delete-btn-action" onclick="event.stopPropagation(); deleteRecord(${item.id})">削除</button>
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "history-actions";
+        actionsDiv.id = `actions-${item.id}`;
+        actionsDiv.innerHTML = `
+            <button class="action-btn edit-btn" onclick="editRecord(${item.id})">編集</button>
+            <button class="action-btn delete-btn-action" onclick="deleteRecord(${item.id})">削除</button>
         `;
 
-        rowDiv.addEventListener("click", () => {
-            const panel = document.getElementById(`actions-${item.id}`);
+        itemDiv.addEventListener("click", (e) => {
+            if (e.target.classList.contains("action-btn")) return;
             const arrow = document.getElementById(`arrow-${item.id}`);
+            const actions = document.getElementById(`actions-${item.id}`);
             
-            document.querySelectorAll(".history-actions").forEach(p => {
-                if (p.id !== `actions-${item.id}`) p.classList.remove("open");
-            });
-            document.querySelectorAll(".history-row-arrow").forEach(a => {
-                if (a.id !== `arrow-${item.id}`) a.classList.remove("open");
-            });
+            const isOpen = actions.classList.contains("open");
+            
+            document.querySelectorAll(".history-actions").forEach(el => el.classList.remove("open"));
+            document.querySelectorAll(".history-row-arrow").forEach(el => el.classList.remove("open"));
 
-            panel.classList.toggle("open");
-            arrow.classList.toggle("open");
+            if (!isOpen) {
+                actions.classList.add("open");
+                arrow.classList.add("open");
+            }
         });
 
-        containerBox.appendChild(rowDiv);
-        containerBox.appendChild(actionDiv);
+        groupWrap.appendChild(itemDiv);
+        groupWrap.appendChild(actionsDiv);
+        historyDiv.appendChild(groupWrap);
     });
-
-    if (hasItems) {
-        historyDiv.appendChild(containerBox);
-    } else {
-        historyDiv.innerHTML = '<p style="color:#999; text-align:center; padding: 20px;">この月の履歴はありません</p>';
-    }
 }
 
-function renderFavorites(){
-    const favorites = document.getElementById("favorites");
-    if (!favorites) return;
+function renderFavorites() {
+    const favsDiv = document.getElementById("favorites");
+    if (!favsDiv) return;
     
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    const counts = {};
+    const favItems = [
+        { name: "コンビニ", category: "食費", icon: "🛒", memo: "コンビニ" },
+        { name: "スーパー", category: "食費", icon: "🥩", memo: "ライフ" },
+        { name: "ドラッグ", category: "日用品", icon: "💊", memo: "薬局" },
+        { name: "カフェ", category: "食費", icon: "☕", memo: "カフェ" },
+        { name: "電車移動", category: "交通費", icon: "🚃", memo: "切符代" }
+    ];
 
-    data.forEach(item=>{
-        if(!item.memo){ return; }
-        const key = item.category + "|" + item.memo;
-        counts[key] = (counts[key] || 0) + 1;
+    favsDiv.innerHTML = "";
+    favItems.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "favorite-item-card-rich";
+        card.innerHTML = `
+            <div class="fav-icon">${item.icon}</div>
+            <div class="fav-name">${item.name}</div>
+        `;
+        card.addEventListener("click", () => {
+            document.getElementById("type-expense").checked = true;
+            document.getElementById("category").value = item.category;
+            document.getElementById("memo").value = item.memo;
+            document.getElementById("amount").value = "";
+            document.querySelector('[data-tab="form-tab"]').click();
+            document.getElementById("amount").focus();
+        });
+        favsDiv.appendChild(card);
     });
-
-    const top3 = Object.entries(counts).sort((a,b)=> b[1]-a[1]).slice(0,4); 
-    favorites.innerHTML = "";
-
-    if(top3.length === 0) {
-        const samples = [
-            {cat: "食費", memo: "スーパー", icon: "🛒"},
-            {cat: "食費", memo: "セブンイレブン", icon: "🏪"},
-            {cat: "交通費", memo: "ガソリン", icon: "⛽"}
-        ];
-        samples.forEach(s => {
-            createFavBtn(s.cat, s.memo, s.icon);
-        });
-    } else {
-        top3.forEach(item=>{
-            const [key] = item;
-            const [cat, memo] = key.split("|");
-            let icon = "🏷️";
-            if (cat === "食費") icon = "🛒";
-            if (memo.includes("セブン")) icon = "🏪";
-            if (memo.includes("ガソリン")) icon = "⛽";
-            createFavBtn(cat, memo, icon);
-        });
-    }
-
-    const addBtn = document.createElement("div");
-    addBtn.className = "favorite-item-card-rich";
-    addBtn.style.borderStyle = "dashed";
-    addBtn.innerHTML = `<div class="fav-icon" style="color:#999;">＋</div><div class="fav-name" style="color:#999;">追加</div>`;
-    favorites.appendChild(addBtn);
 }
 
-function createFavBtn(cat, memo, icon) {
-    const favorites = document.getElementById("favorites");
-    const div = document.createElement("div");
-    div.className = "favorite-item-card-rich";
-    div.innerHTML = `
-        <div class="fav-icon">${icon}</div>
-        <div class="fav-name">${memo}</div>
-    `;
-    div.onclick = ()=>{
-        document.getElementById("category").value = cat;
-        document.getElementById("memo").value = memo;
-        updateSparrowSpeech(`『${memo}』を選んだね！金額を入力して登録ボタンをポチだチュン！`);
-    };
-    favorites.appendChild(div);
-}
+if (saveBtn) {
+    saveBtn.addEventListener("click", () => {
+        const type = document.querySelector('name="type"').value || document.querySelector('input[name="type"]:checked').value;
+        const amount = Number(document.getElementById("amount").value);
+        const category = document.getElementById("category").value;
+        const memo = document.getElementById("memo").value;
+        const date = document.getElementById("date").value;
 
-function deleteRecord(id){
-    if(!confirm("削除しますか？")){ return; }
-    let data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    data = data.filter(item => item.id !== id);
-    localStorage.setItem("kakeibo", JSON.stringify(data));
-    initApp();
-}
-
-function updateSummary(){
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    const homePicker = document.getElementById("home-date-picker");
-    let targetYear = new Date().getFullYear();
-    let targetMonth = new Date().getMonth();
-    
-    if (homePicker && homePicker.value) {
-        const matches = homePicker.value.match(/(\d+)年(\d+)月/);
-        if (matches) {
-            targetYear = Number(matches[1]);
-            targetMonth = Number(matches[2]) - 1;
+        if (!amount || amount <= 0) {
+            alert("正しい金額を入力してくださいチュン！");
+            return;
         }
-    }
-
-    let income = 0; let expense = 0;
-
-    data.forEach(item=>{
-        const d = new Date(item.date);
-        if(d.getFullYear() === targetYear && d.getMonth() === targetMonth){
-            if(item.type === "income"){ income += item.amount; }
-            if(item.type === "expense"){ expense += item.amount; }
+        if (!date) {
+            alert("日付を選んでほしいチュン！");
+            return;
         }
-    });
 
-    if(document.getElementById("monthlyIncome")) document.getElementById("monthlyIncome").textContent = "¥" + income.toLocaleString();
-    if(document.getElementById("monthlyExpense")) document.getElementById("monthlyExpense").textContent = "¥" + expense.toLocaleString();
-    
-    const balance = income - expense;
-    if(document.getElementById("monthlyBalance")) document.getElementById("monthlyBalance").textContent = (balance >= 0 ? "+" : "") + "¥" + balance.toLocaleString();
+        const data = getKakeiboData();
+
+        if (editId) {
+            const index = data.findIndex(item => item.id === editId);
+            if (index !== -1) {
+                data[index] = { id: editId, date, type, category, amount, memo };
+            }
+            editId = null;
+            saveBtn.textContent = "登録する";
+        } else {
+            const newRecord = { id: Date.now(), date, type, category, amount, memo };
+            data.push(newRecord);
+        }
+
+        localStorage.setItem("kakeibo", JSON.stringify(data));
+
+        document.getElementById("amount").value = "";
+        document.getElementById("memo").value = "";
+        document.getElementById("date").value = new Date().toISOString().split("T")[0];
+
+        initHomeDatePicker();
+        loadHistory();
+        updateSummary();
+        updateSparrowSpeech();
+
+        alert("記録を保存したチュン！");
+        document.querySelector('[data-tab="home-tab"]').click();
+    });
 }
 
-function editRecord(id){
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    const item = data.find(record => record.id === id);
-    if(!item){ return; }
+function editRecord(id) {
+    const data = getKakeiboData();
+    const record = data.find(item => item.id === id);
+    if (!record) return;
 
     editId = id;
-    document.querySelector(`input[name="type"][value="${item.type}"]`).checked = true;
-    document.getElementById("amount").value = item.amount;
-    document.getElementById("category").value = item.category;
-    document.getElementById("memo").value = item.memo;
-    document.getElementById("date").value = item.date;
+    document.getElementById(`type-${record.type}`).checked = true;
+    document.getElementById("amount").value = record.amount;
+    document.getElementById("category").value = record.category;
+    document.getElementById("memo").value = record.memo;
+    document.getElementById("date").value = record.date;
 
-    saveBtn.textContent = "更新する";
+    saveBtn.textContent = "変更を保存する";
     document.querySelector('[data-tab="form-tab"]').click();
 }
 
-if(saveBtn) {
-    saveBtn.addEventListener("click", saveData);
+function deleteRecord(id) {
+    if (!confirm("本当にこの記録を消しちゃうチュンか？")) return;
+    let data = getKakeiboData();
+    data = data.filter(item => item.id !== id);
+    localStorage.setItem("kakeibo", JSON.stringify(data));
+    
+    loadHistory();
+    updateSummary();
+    updateSparrowSpeech();
+    renderCategoryReport();
 }
 
-// ==================== 集計画面 ====================
+function initPeriodPicker() {
+    const picker = document.getElementById("report-period-picker");
+    if (!picker) return;
+
+    const data = getKakeiboData();
+    const periods = new Set();
+    const now = new Date();
+
+    if (currentPeriodMode === "monthly") {
+        periods.add(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+        data.forEach(item => { if (item.date && item.date.length >= 7) periods.add(item.date.substring(0, 7)); });
+    } else {
+        periods.add(`${now.getFullYear()}`);
+        data.forEach(item => { if (item.date && item.date.length >= 4) periods.add(item.date.substring(0, 4)); });
+    }
+
+    const sorted = Array.from(periods).sort().reverse();
+    const prevVal = picker.value;
+    picker.innerHTML = "";
+
+    sorted.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        if (currentPeriodMode === "monthly") {
+            const [y, m] = p.split("-");
+            opt.textContent = `${y}年${parseInt(m,10)}月`;
+        } else {
+            opt.textContent = `${p}年`;
+        }
+        picker.appendChild(opt);
+    });
+
+    if (prevVal && sorted.includes(prevVal)) picker.value = prevVal;
+    else picker.value = sorted[0];
+}
+
 function setupReportFilters() {
     const btnMonthly = document.getElementById("btn-monthly");
     const btnYearly = document.getElementById("btn-yearly");
     const picker = document.getElementById("report-period-picker");
 
-    if(!btnMonthly) return;
-
-    btnMonthly.addEventListener("click", () => {
-        currentPeriodMode = "monthly";
-        btnMonthly.classList.add("active");
-        if(btnYearly) btnYearly.classList.remove("active");
-        initPeriodPicker();
-        renderCategoryReport();
-    });
-
-    if(btnYearly) {
+    if(btnMonthly && btnYearly) {
+        btnMonthly.addEventListener("click", () => {
+            currentPeriodMode = "monthly";
+            btnMonthly.classList.add("active");
+            btnYearly.classList.remove("active");
+            initPeriodPicker();
+            renderCategoryReport();
+        });
         btnYearly.addEventListener("click", () => {
             currentPeriodMode = "yearly";
             btnYearly.classList.add("active");
@@ -466,106 +427,63 @@ function setupReportFilters() {
         });
     }
 
-    if(picker) {
-        picker.addEventListener("change", renderCategoryReport);
+    if (picker) {
+        picker.addEventListener("change", () => {
+            renderCategoryReport();
+        });
     }
 }
 
-function initPeriodPicker() {
-    const picker = document.getElementById("report-period-picker");
-    if(!picker) return;
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    const periods = new Set();
-
-    if(data.length === 0) {
-        const now = new Date();
-        if(currentPeriodMode === "monthly") {
-            periods.add(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
-        } else {
-            periods.add(`${now.getFullYear()}`);
-        }
-    }
-
-    data.forEach(item => {
-        if(!item.date) return;
-        const [year, month] = item.date.split("-");
-        if(currentPeriodMode === "monthly") {
-            periods.add(`${year}-${month}`);
-        } else {
-            periods.add(`${year}`);
-        }
-    });
-
-    const sortedPeriods = Array.from(periods).sort((a, b) => b.localeCompare(a));
-    const savedValue = picker.value;
-    picker.innerHTML = "";
-
-    sortedPeriods.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = currentPeriodMode === "monthly" ? `${p.split("-")[0]}年${p.split("-")[1]}月` : `${p}年`;
-        picker.appendChild(opt);
-    });
-
-    if(sortedPeriods.includes(savedValue)) {
-        picker.value = savedValue;
-    }
-}
-
-// ==================== グラフの導入 & レポート描画 ====================
 function renderCategoryReport() {
-    const reportDiv = document.getElementById("category-report");
     const picker = document.getElementById("report-period-picker");
+    const reportTitle = document.getElementById("report-title");
+    const reportDiv = document.getElementById("category-report");
     const pieChart = document.getElementById("category-pie-chart");
-    
-    if(!reportDiv || !picker || !picker.value) return;
 
-    const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
-    const selected = picker.value; 
-    const categoryTotals = {};
-    let totalSum = 0;
+    if (!picker || !reportDiv) return;
 
-    data.forEach(item => {
-        if(item.type !== "expense" || !item.date) return;
-        
-        let match = false;
-        if(currentPeriodMode === "monthly" && item.date.startsWith(selected)) {
-            match = true;
-        } else if(currentPeriodMode === "yearly" && item.date.startsWith(selected)) {
-            match = true;
-        }
-
-        if(match) {
-            categoryTotals[item.category] = (categoryTotals[item.category] || 0) + item.amount;
-            totalSum += item.amount;
-        }
-    });
-
-    reportDiv.innerHTML = "";
-    if(document.getElementById("report-title")) {
-        document.getElementById("report-title").textContent = `${currentPeriodMode === 'monthly' ? '月間' : '年間'}支出合計: ¥${totalSum.toLocaleString()}`;
-    }
-
-    const entries = Object.entries(categoryTotals);
-    if(entries.length === 0) {
-        reportDiv.innerHTML = '<p style="color:#999; text-align:center; margin:10px 0;">データがありません</p>';
-        if (pieChart) pieChart.style.background = "#eee"; 
+    const selectedPeriod = picker.value;
+    if (!selectedPeriod) {
+        reportDiv.innerHTML = "<p style='text-align:center;color:#999;'>データがありません</p>";
+        if(pieChart) pieChart.style.background = "#eee";
         return;
     }
 
-    entries.sort((a, b) => b[1] - a[1]);
+    const data = getKakeiboData();
+    const filtered = data.filter(item => {
+        if (!item.date || item.type !== "expense") return false;
+        return item.date.startsWith(selectedPeriod);
+    });
 
-    let gradientParts = [];
-    let currentPercentSum = 0;
+    let totalExpense = 0;
+    const catTotals = {};
+    filtered.forEach(item => {
+        totalExpense += item.amount;
+        catTotals[item.category] = (catTotals[item.category] || 0) + item.amount;
+    });
 
-    entries.forEach(([category, total]) => {
-        const percent = totalSum > 0 ? (total / totalSum) * 100 : 0;
+    if(reportTitle) reportTitle.textContent = `支出合計: ¥${totalExpense.toLocaleString()}`;
+    reportDiv.innerHTML = "";
+
+    if (totalExpense === 0) {
+        reportDiv.innerHTML = "<p style='text-align:center;color:#999;font-size:13px;'>この期間の支出はありませんチュン！</p>";
+        if (pieChart) pieChart.style.background = "#eee";
+        return;
+    }
+
+    const sortedCats = Object.keys(catTotals).sort((a, b) => catTotals[b] - catTotals[a]);
+    let percentSum = 0;
+    const gradientParts = [];
+
+    sortedCats.forEach(category => {
+        const total = catTotals[category];
+        const percent = (total / totalExpense) * 100;
         const displayPercent = Math.round(percent);
         const color = CATEGORY_COLORS[category] || "#A2A09B";
 
-        const startDeg = (currentPercentSum / 100) * 360;
-        currentPercentSum += percent;
-        const endDeg = (currentPercentSum / 100) * 360;
+        const startDeg = (percentSum / 100) * 360;
+        percentSum += percent;
+        const endDeg = (percentSum / 100) * 360;
 
         gradientParts.push(`${color} ${startDeg}deg ${endDeg}deg`);
 
@@ -574,25 +492,26 @@ function renderCategoryReport() {
         itemDiv.innerHTML = `
             <span>
                 <span style="display:inline-block; width:12px; height:12px; background:${color}; border-radius:3px; margin-right:6px;"></span>
-                ${category} <small style="color:#999; font-size:11px;">(${displayPercent}%)</small>
+                ${category} <small style=\"color:#999; font-size:11px;\">(${displayPercent}%)</small>
             </span>
             <strong>¥${total.toLocaleString()}</strong>
         `;
         reportDiv.appendChild(itemDiv);
     });
 
-    if (pieChart) {
+    if (pieChart && gradientParts.length > 0) {
         pieChart.style.background = `conic-gradient(${gradientParts.join(", ")})`;
     }
 }
 
-// ==================== 設定画面 ====================
 function setupSettings() {
     const clearBtn = document.getElementById("clearDataBtn");
+    const exportCsvBtn = document.getElementById("exportCsvBtn");
+    const importCsvFile = document.getElementById("importCsvFile");
+
     if(clearBtn) {
         clearBtn.addEventListener("click", () => {
             if(confirm("すべてのデータを削除します。本当によろしいですか？")) {
-                localStorage.removeItem("kakeibo");
                 localStorage.setItem("kakeibo", JSON.stringify([]));
                 initApp();
                 alert("データを初期化しました。");
@@ -601,19 +520,21 @@ function setupSettings() {
         });
     }
 
-    const exportBtn = document.getElementById("exportCsvBtn");
-    if(exportBtn) {
-        exportBtn.addEventListener("click", () => {
-            const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
+    if(exportCsvBtn) {
+        exportCsvBtn.addEventListener("click", () => {
+            const data = getKakeiboData();
             if(data.length === 0) {
-                alert("出力するデータがありません。");
+                alert("エクスポートするデータがないチュン！");
                 return;
             }
-            let csvContent = "\uFEFF" + "ID,日付,タイプ,カテゴリ,金額,メモ\n";
+            let csvContent = "id,date,type,category,amount,memo\n";
             data.forEach(item => {
-                csvContent += `${item.id},${item.date},${item.type},${item.category},${item.amount},"${(item.memo || '').replace(/"/g, '""')}"\n`;
+                const memoEscaped = (item.memo || "").replace(/"/g, '""');
+                csvContent += `${item.id},${item.date},${item.type},${item.category},${item.amount},"${memoEscaped}"\n`;
             });
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csvContent], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             link.setAttribute("href", url);
@@ -624,23 +545,24 @@ function setupSettings() {
         });
     }
 
-    const importFile = document.getElementById("importCsvFile");
-    if(importFile) {
-        importFile.addEventListener("change", (e) => {
+    if(importCsvFile) {
+        importCsvFile.addEventListener("change", (e) => {
             const file = e.target.files[0];
-            if(!file) return;
+            if (!file) return;
+
             const reader = new FileReader();
-            reader.onload = function(event) {
-                const text = event.target.result;
-                const lines = text.split(/\r\n|\n/);
-                const data = JSON.parse(localStorage.getItem("kakeibo")) || [];
+            reader.onload = function(evt) {
+                const text = evt.target.result;
+                const lines = text.split("\n");
+                let data = getKakeiboData();
                 let importCount = 0;
 
-                for(let i = 1; i < lines.length; i++) {
+                for (let i = 1; i < lines.length; i++) {
                     const line = lines[i].trim();
-                    if(!line) continue;
-                    const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if(parts.length < 5) continue;
+                    if (!line) continue;
+
+                    const parts = line.split(",");
+                    if (parts.length < 5) continue;
 
                     const id = parts[0] ? Number(parts[0]) : Date.now() + i;
                     const date = parts[1];
@@ -673,7 +595,6 @@ function setupSettings() {
     }
 }
 
-// ==================== PWA サービスワーカー自動登録 ====================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('serviceWorker.js')
