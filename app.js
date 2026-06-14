@@ -225,20 +225,24 @@ function updateSparrowSpeech() {
     }
 }
 
-function updateSummary() {
-    const data = getKakeiboData();
-    const datePicker = document.getElementById("home-date-picker");
-    if (!datePicker || !datePicker.value) return;
+// ... (他の関数はそのまま) ...
 
-    const currentPeriod = datePicker.value;
-    const filtered = data.filter(item => item.date && item.date.startsWith(currentPeriod));
+function setupSettings() {
+    // ... setupSettings の中の処理 ...
+    // ... (reader.onload の中身も含む)
+    
+        if(importCsvFile) {
+            importCsvFile.addEventListener("change", (e) => {
+                // ... インポートの処理 ...
+            }); // ← importCsvFileの閉じ括弧
+        }
+} // ← 【重要】ここで setupSettings 関数を閉じる
 
-    let income = 0;
-    let expense = 0;
-
-    filtered.forEach(item => {
-        if (item.type === "income") income += item.amount;
-        else expense += item.amount;
+// そのすぐ下に、Service Worker の登録処理を置く
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('serviceworker.js')
+            .then((reg) => console.log('PWA Service Worker 登録完了範囲:', reg.scope))
+            .catch((err) => console.error('PWA 登録失敗:', err));
     });
-
-    const balance
+}
