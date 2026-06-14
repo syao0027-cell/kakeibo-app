@@ -245,4 +245,3 @@ if ('serviceWorker' in navigator) {
             .then((reg) => console.log('PWA Service Worker 登録完了範囲:', reg.scope))
             .catch((err) => console.error('PWA 登録失敗:', err));
     });
-}
