@@ -704,4 +704,21 @@ function setupSettings() {
                     }
                     importCount++;
                 }
+                localStorage.setItem("kakeibo", JSON.stringify(data));
+                initApp();
+                alert(`${importCount}件のデータをインポートしました！`);
+                e.target.value = "";
+                document.querySelector('[data-tab="home-tab"]').click();
+            };
+            reader.readAsText(file);
+        });
+    }
+}
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('serviceworker.js')
+            .then((reg) => console.log('PWA Service Worker 登録完了範囲:', reg.scope))
+            .catch((err) => console.error('PWA 登録失敗:', err));
+    });
 }
