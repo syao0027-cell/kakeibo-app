@@ -18,7 +18,7 @@ function initApp() {
     initHomeDatePicker();  
     loadHistory();
     updateSummary();
-    renderFavorites();
+    renderFavorites(); // タブ移動時や起動時にここから呼び出されます
     initPeriodPicker();    
     renderCategoryReport(); 
     updateSparrowSpeech();      
@@ -34,7 +34,6 @@ function triggerSparrowVisual(animationType = "jump", imageType = "normal") {
     const sparrowWrapper = document.querySelector(".sparrow-watercolor-wrapper");
     const sparrowIcon = document.getElementById("sparrow-icon");
 
-    // アニメーションの適用
     if (sparrowWrapper) {
         sparrowWrapper.classList.remove("jump-animation");
         void sparrowWrapper.offsetWidth; 
@@ -43,7 +42,6 @@ function triggerSparrowVisual(animationType = "jump", imageType = "normal") {
         }
     }
 
-    // 表情画像の切り替え
     if (sparrowIcon) {
         let srcPath = "icon.png";
         if (imageType === "happy") srcPath = "icon-happy.png";
@@ -157,110 +155,4 @@ function setupTabs() {
 
     navButtons.forEach(button => {
         button.addEventListener("click", () => {
-            const targetTab = button.getAttribute("data-tab");
-            navButtons.forEach(btn => btn.classList.remove("active"));
-            button.classList.add("active");
-
-            tabContents.forEach(tab => {
-                if (tab.id === targetTab) {
-                    tab.classList.add("active");
-                } else {
-                    tab.classList.remove("active");
-                }
-            });
-            window.scrollTo(0, 0);
-            
-            const speech = document.getElementById("sparrow-speech");
-            if (targetTab === "form-tab") {
-                if(speech) speech.textContent = "忘れずに書くの、えらいチュン！";
-                triggerSparrowVisual("jump", "work"); 
-            } else if (targetTab === "summary-tab") {
-                renderCategoryReport();
-                if(speech) speech.textContent = "今月はどんな感じチュン？";
-                triggerSparrowVisual("jump", "normal");
-            } else if (targetTab === "home-tab") {
-                loadHistory();
-                updateSummary();
-                updateSparrowSpeech();
-            }
-        });
-    });
-}
-
-function updateSparrowSpeech() {
-    const speech = document.getElementById("sparrow-speech");
-    if (!speech) return;
-
-    const data = getKakeiboData();
-    const datePicker = document.getElementById("home-date-picker");
-    if (!datePicker || !datePicker.value) {
-        speech.textContent = getTimeBasedGreeting();
-        triggerSparrowVisual("none", "normal");
-        return;
-    }
-
-    const currentPeriod = datePicker.value;
-    const currentData = data.filter(item => item.date && item.date.startsWith(currentPeriod));
-    
-    let totalExpense = 0;
-    let totalIncome = 0;
-    currentData.forEach(item => {
-        if (item.type === "expense") totalExpense += item.amount;
-        if (item.type === "income") totalIncome += item.amount;
-    });
-
-    const balance = totalIncome - totalExpense;
-
-    if (currentData.length <= 4) {
-        speech.textContent = getTimeBasedGreeting();
-        triggerSparrowVisual("none", "normal");
-    } else if (balance < 0) {
-        speech.textContent = "今月はちょっと赤字チュン…！無理せず一緒にがんばろう？";
-        triggerSparrowVisual("none", "sad"); 
-    } else if (balance > 100000) {
-        speech.textContent = "貯金が10万円突破！すごすぎるチュン！天才っ！";
-        triggerSparrowVisual("none", "happy"); 
-    } else {
-        speech.textContent = "いい調子チュン！この調子でコツコツいこう♪";
-        triggerSparrowVisual("none", "normal");
-    }
-}
-
-function updateSummary() {
-    const data = getKakeiboData();
-    const datePicker = document.getElementById("home-date-picker");
-    if (!datePicker || !datePicker.value) return;
-
-    const currentPeriod = datePicker.value;
-    const filtered = data.filter(item => item.date && item.date.startsWith(currentPeriod));
-
-    let income = 0;
-    let expense = 0;
-
-    filtered.forEach(item => {
-        if (item.type === "income") income += item.amount;
-        else expense += item.amount;
-    });
-
-    const balance = income - expense;
-
-    document.getElementById("monthlyIncome").textContent = `¥${income.toLocaleString()}`;
-    document.getElementById("monthlyExpense").textContent = `¥${expense.toLocaleString()}`;
-    
-    const balanceEl = document.getElementById("monthlyBalance");
-    balanceEl.textContent = `¥${balance.toLocaleString()}`;
-    if (balance < 0) {
-        balanceEl.style.color = "#E79A82"; 
-    } else {
-        balanceEl.style.color = "#DEB34A"; 
-    }
-}
-
-function loadHistory() {
-    if (!historyDiv) return;
-    historyDiv.innerHTML = "";
-
-    const data = getKakeiboData();
-    const datePicker = document.getElementById("home-date-picker");
-    if (!datePicker || !datePicker.value) {
-        historyDiv.innerHTML = "<p style='text-align:center;font-size:13px;color:#
+            const targetTab = button.getAttribute("data
