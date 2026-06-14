@@ -418,3 +418,37 @@ body {
   0% { transform: translateY(0) rotate(0deg); opacity: 1; }
   100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
 }
+
+/* 文字だけのお気に入りボタン（横並びでスッキリ配置） */
+#favorites {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.favorite-item-tag-only {
+    background: #FFFFFF;
+    border: 1px solid #E6E4DC;
+    border-radius: 20px; /* 丸みのある可愛いタブ形状 */
+    padding: 8px 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* タップした時に少し沈むアニメーション */
+.favorite-item-tag-only:active {
+    transform: scale(0.95);
+    background-color: #F5F3EB;
+}
+
+.fav-tag-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: #4A4842;
+    white-space: nowrap; /* 文字が途中で折り返さないようにする */
+}

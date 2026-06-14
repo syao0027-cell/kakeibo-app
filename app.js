@@ -18,7 +18,7 @@ function initApp() {
     initHomeDatePicker();  
     loadHistory();
     updateSummary();
-    renderFavorites(); // タブ移動時や起動時にここから呼び出されます
+    renderFavorites(); 
     initPeriodPicker();    
     renderCategoryReport(); 
     updateSparrowSpeech();      
@@ -155,4 +155,141 @@ function setupTabs() {
 
     navButtons.forEach(button => {
         button.addEventListener("click", () => {
-            const targetTab = button.getAttribute("data
+            const targetTab = button.getAttribute("data-tab");
+            navButtons.forEach(btn => btn.classList.remove("active"));
+            button.classList.add("active");
+
+            tabContents.forEach(tab => {
+                if (tab.id === targetTab) {
+                    tab.classList.add("active");
+                } else {
+                    tab.classList.remove("active");
+                }
+            });
+            window.scrollTo(0, 0);
+            
+            const speech = document.getElementById("sparrow-speech");
+            if (targetTab === "form-tab") {
+                if(speech) speech.textContent = "忘れずに書くの、えらいチュン！";
+                triggerSparrowVisual("jump", "work"); 
+            } else if (targetTab === "summary-tab") {
+                renderCategoryReport();
+                if(speech) speech.textContent = "今月はどんな感じチュン？";
+                triggerSparrowVisual("jump", "normal");
+            } else if (targetTab === "home-tab") {
+                loadHistory();
+                updateSummary();
+                updateSparrowSpeech();
+                renderFavorites(); 
+            }
+        });
+    });
+}
+
+function updateSparrowSpeech() {
+    const speech = document.getElementById("sparrow-speech");
+    if (!speech) return;
+
+    const data = getKakeiboData();
+    const datePicker = document.getElementById("home-date-picker");
+    if (!datePicker || !datePicker.value) {
+        speech.textContent = getTimeBasedGreeting();
+        triggerSparrowVisual("none", "normal");
+        return;
+    }
+
+    const currentPeriod = datePicker.value;
+    const currentData = data.filter(item => item.date && item.date.startsWith(currentPeriod));
+    
+    let totalExpense = 0;
+    let totalIncome = 0;
+    currentData.forEach(item => {
+        if (item.type === "expense") totalExpense += item.amount;
+        if (item.type === "income") totalIncome += item.amount;
+    });
+
+    const balance = totalIncome - totalExpense;
+
+    if (currentData.length <= 4) {
+        speech.textContent = getTimeBasedGreeting();
+        triggerSparrowVisual("none", "normal");
+    } else if (balance < 0) {
+        speech.textContent = "今月はちょっと赤字チュン…！無理せず一緒にがんばろう？";
+        triggerSparrowVisual("none", "sad"); 
+    } else if (balance > 100000) {
+        speech.textContent = "貯金が10万円突破！すごすぎるチュン！天才っ！";
+        triggerSparrowVisual("none", "happy"); 
+    } else {
+        speech.textContent = "いい調子チュン！この調子でコツコツいこう♪";
+        triggerSparrowVisual("none", "normal");
+    }
+}
+
+function updateSummary() {
+    const data = getKakeiboData();
+    const datePicker = document.getElementById("home-date-picker");
+    if (!datePicker || !datePicker.value) return;
+
+    const currentPeriod = datePicker.value;
+    const filtered = data.filter(item => item.date && item.date.startsWith(currentPeriod));
+
+    let income = 0;
+    let expense = 0;
+
+    filtered.forEach(item => {
+        if (item.type === "income") income += item.amount;
+        else expense += item.amount;
+    });
+
+    const balance = income - expense;
+
+    document.getElementById("monthlyIncome").textContent = `¥${income.toLocaleString()}`;
+    document.getElementById("monthlyExpense").textContent = `¥${expense.toLocaleString()}`;
+    
+    const balanceEl = document.getElementById("monthlyBalance");
+    balanceEl.textContent = `¥${balance.toLocaleString()}`;
+    if (balance < 0) {
+        balanceEl.style.color = "#E79A82"; 
+    } else {
+        balanceEl.style.color = "#DEB34A"; 
+    }
+}
+
+function loadHistory() {
+    if (!historyDiv) return;
+    historyDiv.innerHTML = "";
+
+    const data = getKakeiboData();
+    const datePicker = document.getElementById("home-date-picker");
+    if (!datePicker || !datePicker.value) {
+        historyDiv.innerHTML = "<p style='text-align:center;font-size:13px;color:#999;'>データがありません</p>";
+        return;
+    }
+
+    const currentPeriod = datePicker.value;
+    const filtered = data.filter(item => item.date && item.date.startsWith(currentPeriod));
+
+    if (filtered.length === 0) {
+        historyDiv.innerHTML = "<p style='text-align:center;font-size:13px;color:#999;'>今月の明細はまだありません</p>";
+        return;
+    }
+
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    filtered.forEach(item => {
+        const day = item.date.split("-")[2] || "";
+        const typeBadge = item.type === "income" ? "🌱" : "👛";
+        const badgeClass = item.type === "income" ? "badge-income" : "badge-expense";
+        const amtPrefix = item.type === "income" ? "+" : "-";
+        const amtColor = item.type === "income" ? "#7FAE7B" : "#E79A82";
+
+        const groupWrap = document.createElement("div");
+        groupWrap.className = "history-group-wrap";
+
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "rich-history-item";
+        itemDiv.innerHTML = `
+            <div class="history-date-box">${day}日</div>
+            <div class="history-type-badge ${badgeClass}">${typeBadge}</div>
+            <div class="history-main-info">
+                <div class="history-title">${item.category}</div>
