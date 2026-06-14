@@ -388,3 +388,33 @@ body {
 .jump-animation {
   animation: sparrow-jump 0.6s ease-in-out;
 }
+
+/* チュンちゃんがぴょこっと跳ねるアニメーション */
+@keyframes sparrow-jump {
+  0% { transform: translateY(0) scale(1); }
+  30% { transform: translateY(-18px) scale(1.08) rotate(-3deg); }
+  50% { transform: translateY(0) scale(0.95); }
+  70% { transform: translateY(-6px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.jump-animation {
+  animation: sparrow-jump 0.6s ease-in-out;
+}
+
+/* お祝い用の紙吹雪アニメーション */
+.confetti {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  z-index: 9999;
+  top: -10px;
+  border-radius: 2px;
+  animation: confetti-fall 2.5s linear forwards;
+  pointer-events: none;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}

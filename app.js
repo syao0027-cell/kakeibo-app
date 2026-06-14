@@ -29,15 +29,64 @@ setupTabs();
 setupSettings();
 setupReportFilters();
 
-// チュンちゃんを跳ねさせる演出用の共通関数
-function triggerSparrowJump() {
+// 【演出①】チュンちゃんを跳ねさせ、表情（画像）を変更する共通関数
+function triggerSparrowVisual(animationType = "jump", imageType = "normal") {
     const sparrowWrapper = document.querySelector(".sparrow-watercolor-wrapper");
+    const sparrowIcon = document.getElementById("sparrow-icon");
+
+    // アニメーションの適用
     if (sparrowWrapper) {
-        // すでにクラスがついている場合は一度消してリセット
         sparrowWrapper.classList.remove("jump-animation");
-        // わずかなディレイを入れて再付与することで、連続して押してもアニメーションが動く
         void sparrowWrapper.offsetWidth; 
-        sparrowWrapper.classList.add("jump-animation");
+        if (animationType === "jump") {
+            sparrowWrapper.classList.add("jump-animation");
+        }
+    }
+
+    // 表情画像の切り替え（ファイルがない場合は通常の icon.png にフォールバック）
+    if (sparrowIcon) {
+        let srcPath = "icon.png";
+        if (imageType === "happy") srcPath = "icon-happy.png";
+        if (imageType === "sad") srcPath = "icon-sad.png";
+        if (imageType === "work") srcPath = "icon-work.png";
+
+        // 画像が存在しない場合のエラーハンドリング（通常のアイコンに戻す）
+        sparrowIcon.onerror = function() {
+            this.src = "icon.png";
+            this.onerror = null; 
+        };
+        sparrowIcon.src = srcPath;
+    }
+}
+
+// 【演出②】お祝いの紙吹雪を降らせるエフェクト関数
+function launchConfetti() {
+    const colors = ["#E79A82", "#DEB34A", "#5A9E96", "#7FAE7B", "#FFD1A9"];
+    for (let i = 0; i < 40; i++) {
+        const confetti = document.createElement("div");
+        confetti.className = "confetti";
+        confetti.style.left = Math.random() * 100 + "vw";
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.transform = `scale(${Math.random() * 0.6 + 0.5})`;
+        confetti.style.animationDelay = Math.random() * 0.5 + "s";
+        document.body.appendChild(confetti);
+
+        // アニメーション終了後に要素を削除
+        setTimeout(() => confetti.remove(), 3000);
+    }
+}
+
+// 【演出③】起動時の時間帯に合わせた挨拶を取得する関数
+function getTimeBasedGreeting() {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 10) {
+        return "おはようチュン！今日も無理せず、マイペースにいこうね♪";
+    } else if (hour >= 10 && hour < 17) {
+        return "こんにちはチュン！お財布を使った記録、忘れないうちにどうぞチュン！";
+    } else if (hour >= 17 && hour < 22) {
+        return "今日もお疲れ様チュン。がんばった自分を褒めてあげるチュンよ🌟";
+    } else {
+        return "夜更かしチュン？今日も1日よく頑張ったね、早く休んでのチュン。";
     }
 }
 
@@ -101,7 +150,7 @@ function onHomePeriodChange() {
     loadHistory();
     updateSummary();
     updateSparrowSpeech();
-    triggerSparrowJump(); // 期間を変えたときも嬉しそうに跳ねる
+    triggerSparrowVisual("jump", "normal");
 }
 
 function setupTabs() {
@@ -126,15 +175,16 @@ function setupTabs() {
             const speech = document.getElementById("sparrow-speech");
             if (targetTab === "form-tab") {
                 if(speech) speech.textContent = "忘れずに書くの、えらいチュン！";
+                triggerSparrowVisual("jump", "work"); // 入力時は作業モードの表情
             } else if (targetTab === "summary-tab") {
                 renderCategoryReport();
                 if(speech) speech.textContent = "今月はどんな感じチュン？";
+                triggerSparrowVisual("jump", "normal");
             } else if (targetTab === "home-tab") {
                 loadHistory();
                 updateSummary();
                 updateSparrowSpeech();
             }
-            triggerSparrowJump(); // タブを切り替えたときもパタパタ動く
         });
     });
 }
@@ -145,7 +195,11 @@ function updateSparrowSpeech() {
 
     const data = getKakeiboData();
     const datePicker = document.getElementById("home-date-picker");
-    if (!datePicker || !datePicker.value) return;
+    if (!datePicker || !datePicker.value) {
+        speech.textContent = getTimeBasedGreeting(); // 初期状態は時間帯別の挨拶
+        triggerSparrowVisual("none", "normal");
+        return;
+    }
 
     const currentPeriod = datePicker.value;
     const currentData = data.filter(item => item.date && item.date.startsWith(currentPeriod));
@@ -159,14 +213,19 @@ function updateSparrowSpeech() {
 
     const balance = totalIncome - totalExpense;
 
-    if (currentData.length === 0) {
-        speech.textContent = "まだ今月のデータがないチュン！記録を待ってるよ！";
+    if (currentData.length <= 4) {
+        // まだ初期のサンプルデータ付近なら時間帯の挨拶を優先
+        speech.textContent = getTimeBasedGreeting();
+        triggerSparrowVisual("none", "normal");
     } else if (balance < 0) {
-        speech.textContent = "今月はちょっと赤字チュン…！一緒にがんばろう？";
+        speech.textContent = "今月はちょっと赤字チュン…！無理せず一緒にがんばろう？";
+        triggerSparrowVisual("none", "sad"); // 赤字のときは悲しい表情
     } else if (balance > 100000) {
-        speech.textContent = "貯金がいっぱい！すごすぎるチュン！天才！";
+        speech.textContent = "貯金が10万円突破！すごすぎるチュン！天才っ！";
+        triggerSparrowVisual("none", "happy"); // 大黒字はハッピーな表情
     } else {
         speech.textContent = "いい調子チュン！この調子でコツコツいこう♪";
+        triggerSparrowVisual("none", "normal");
     }
 }
 
@@ -348,12 +407,30 @@ if (saveBtn) {
         initHomeDatePicker();
         loadHistory();
         updateSummary();
+        
+        // 【演出④】ゾロ目（ラッキーセブン等）や特別な語呂合わせの検知
+        const amtStr = String(amount);
+        const isRepeated = amtStr.split('').every(char => char === amtStr[0]) && amtStr.length > 1;
+        
+        if (amtStr === "777" || amtStr === "7777") {
+            alert("トリプルセブン！超ラッキーチュン！運気が上がってるチュンよ！！");
+            launchConfetti(); // 大量お祝い
+            triggerSparrowVisual("jump", "happy");
+        } else if (isRepeated) {
+            alert(`おおっ、${amount}円のゾロ目チュン！なんか良いことありそう♪`);
+            launchConfetti();
+            triggerSparrowVisual("jump", "happy");
+        } else if (amtStr === "2525") {
+            alert("2525（ニコニコ）円チュン！毎日笑顔で過ごそうね！");
+            launchConfetti();
+            triggerSparrowVisual("jump", "happy");
+        } else {
+            // 通常の保存演出
+            triggerSparrowVisual("jump", "happy");
+            alert("記録を保存したチュン！");
+        }
+
         updateSparrowSpeech();
-
-        // アラートの前にチュンちゃんを跳ねさせる
-        triggerSparrowJump();
-
-        alert("記録を保存したチュン！");
         document.querySelector('[data-tab="home-tab"]').click();
     });
 }
@@ -385,8 +462,7 @@ function deleteRecord(id) {
     updateSparrowSpeech();
     renderCategoryReport();
     
-    // 消されちゃって驚く・あるいは納得のジャンプ
-    triggerSparrowJump();
+    triggerSparrowVisual("jump", "sad"); // 削除された時は少し寂しそうなアクション
 }
 
 function initPeriodPicker() {
@@ -437,7 +513,7 @@ function setupReportFilters() {
             btnYearly.classList.remove("active");
             initPeriodPicker();
             renderCategoryReport();
-            triggerSparrowJump();
+            triggerSparrowVisual("jump", "normal");
         });
         btnYearly.addEventListener("click", () => {
             currentPeriodMode = "yearly";
@@ -445,7 +521,7 @@ function setupReportFilters() {
             btnMonthly.classList.remove("active");
             initPeriodPicker();
             renderCategoryReport();
-            triggerSparrowJump();
+            triggerSparrowVisual("jump", "normal");
         });
     }
 
